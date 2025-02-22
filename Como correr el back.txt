@@ -1,0 +1,4 @@
+una vez en la carpeta del back en la terminal utilizar este comando
+ .\venv\Scripts\activate.bat 
+Despues en la terminal acceder a scr del back y ejecutar este comando
+python app.py
