@@ -26,10 +26,35 @@ export const Navbar = () =>
                             Principal
                         </Link>
                     </li>
-                    <li className="nav-item">
-                        <Link className="nav-link" to="/user">
-                            user
-                        </Link>
+                    <li className="nav-item dropdown">
+                        <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Usuario
+                        </a>
+                        <ul className="dropdown-menu">
+                            <li><Link className="dropdown-item" to="/newuser">
+                                Registrar un Usuario
+                                </Link>
+                            </li>
+                            <li><Link className="dropdown-item" to="/viewuser">
+                                Ver usuario
+                                </Link>
+                            </li>
+                        </ul>
+                    </li>
+                    <li className="nav-item dropdown">
+                        <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Candidato
+                        </a>
+                        <ul className="dropdown-menu">
+                            <li><Link className="dropdown-item" to="/newcandidate">
+                                Registrar un candidato
+                                </Link>
+                            </li>
+                            <li><Link className="dropdown-item" to="/viewcandidate">
+                                Ver candidatos
+                                </Link>
+                            </li>
+                        </ul>
                     </li>
                     <li className="nav-item">
                         <Link className="nav-link" to="/about">
