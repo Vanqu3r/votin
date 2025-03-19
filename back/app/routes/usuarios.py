@@ -24,6 +24,25 @@ def create_usuario():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Obtener todos los usuarios
+@usuarios_bp.route('/', methods=['GET'])
+def get_propuestas():
+    usuarios = []
+    for doc in db.find():
+        doc['_id'] = str(doc['_id'])
+        usuarios.append(doc)
+    return jsonify(usuarios)
+
+# Obtener un usuario por ID
+@usuarios_bp.route('/<id>', methods=['GET'])
+def get_propuesta(id):
+    usuario = db.find_one({'_id': ObjectId(id)})
+    if not usuario:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    usuario['_id'] = str(usuario['_id'])
+    return jsonify(usuario)
+
 # Actualizar usuario con validación
 @usuarios_bp.route('/<id>', methods=['PUT'])
 def update_usuario(id):
@@ -42,3 +61,8 @@ def update_usuario(id):
         return jsonify(updated_user)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@usuarios_bp.route('/<id>', methods=['DELETE'])
+def deleteUsuario(id):
+    db.delete_one({'_id': ObjectId(id)})
+    return jsonify({'Usuario eliminado'})

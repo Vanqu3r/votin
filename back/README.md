@@ -92,9 +92,9 @@ http://127.0.0.1:5000/
 |--------|-----------------|---------------------------|
 | POST   | /api/users/     | Crear usuario (votante)   |
 | GET    | /api/users/     | Listar todos los usuarios |
-| GET    | /api/users/<id> | Obtener usuario por ID    |
-| PUT    | /api/users/<id> | Actualizar usuario        |
-| DELETE | /api/users/<id> | Eliminar usuario          |
+| GET    | /api/users/(id) | Obtener usuario por ID    |
+| PUT    | /api/users/(id) | Actualizar usuario        |
+| DELETE | /api/users/(id) | Eliminar usuario          |
 
 ---
 
@@ -104,9 +104,9 @@ http://127.0.0.1:5000/
 |--------|----------------------|-----------------------------|
 | POST   | /api/candidates/     | Crear candidato             |
 | GET    | /api/candidates/     | Listar todos los candidatos |
-| GET    | /api/candidates/<id> | Obtener candidato por ID    |
-| PUT    | /api/candidates/<id> | Actualizar candidato        |
-| DELETE | /api/candidates/<id> | Eliminar candidato          |
+| GET    | /api/candidates/(id) | Obtener candidato por ID    |
+| PUT    | /api/candidates/(id) | Actualizar candidato        |
+| DELETE | /api/candidates/(id) | Eliminar candidato          |
 
 ---
 
@@ -116,9 +116,9 @@ http://127.0.0.1:5000/
 |--------|-----------------------|----------------------------|
 | POST   | /api/propuestas/      | Crear propuesta            |
 | GET    | /api/propuestas/      | Listar todas las propuestas|
-| GET    | /api/propuestas/<id>  | Obtener propuesta por ID   |
-| PUT    | /api/propuestas/<id>  | Actualizar propuesta       |
-| DELETE | /api/propuestas/<id>  | Eliminar propuesta         |
+| GET    | /api/propuestas/(id)  | Obtener propuesta por ID   |
+| PUT    | /api/propuestas/(id)  | Actualizar propuesta       |
+| DELETE | /api/propuestas/(id)  | Eliminar propuesta         |
 
 ---
 
@@ -127,8 +127,8 @@ http://127.0.0.1:5000/
 | Método | Ruta                           | Descripción                                           |
 |--------|--------------------------------|-------------------------------------------------------|
 | POST   | /api/preferencias/             | Crear o actualizar las preferencias de un usuario     |
-| GET    | /api/preferencias/<usuario_id> | Obtener las preferencias de un usuario por su ID      |
-| DELETE | /api/preferencias/<usuario_id> | Eliminar las preferencias de un usuario               |
+| GET    | /api/preferencias/(usuario_id) | Obtener las preferencias de un usuario por su ID      |
+| DELETE | /api/preferencias/(usuario_id) | Eliminar las preferencias de un usuario               |
 | GET    | /api/preferencias/preguntas    | Obtener el formulario de categorías y preguntas       |
 
 ---

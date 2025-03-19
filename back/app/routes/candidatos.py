@@ -22,6 +22,26 @@ def create_candidato():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Obtener todos los candidatos
+@candidatos_bp.route('/', methods=['GET'])
+def get_propuestas():
+    candidatos = []
+    for doc in dbC.find():
+        doc['_id'] = str(doc['_id'])
+        candidatos.append(doc)
+    return jsonify(candidatos)
+
+# Obtener un candidato por ID
+@candidatos_bp.route('/<id>', methods=['GET'])
+def get_propuesta(id):
+    candidato = dbC.find_one({'_id': ObjectId(id)})
+    if not candidato:
+        return jsonify({'error': 'Candidato no encontrado'}), 404
+
+    candidato['_id'] = str(candidato['_id'])
+    return jsonify(candidato)
+
+
 # Actualizar candidato con validación
 @candidatos_bp.route('/<id>', methods=['PUT'])
 def update_candidato(id):
@@ -40,3 +60,8 @@ def update_candidato(id):
         return jsonify(updated_candidato)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@candidatos_bp.route('/<id>', methods=['DELETE'])
+def deleteUsuario(id):
+    dbC.delete_one({'_id': ObjectId(id)})
+    return jsonify({'Candidato eliminado'})
