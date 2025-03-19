@@ -8,7 +8,7 @@ export const User = () => {
 
 
         try {
-            const r = await fetch(`${api_back}/user`, {
+            const r = await fetch(`${api_back}api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
