@@ -146,7 +146,6 @@ Cada documento representa una **propuesta política**.
 ### 🔗 Relaciones entre colecciones:
 
 - `v_votantes.propuestas_votadas[].id_propuesta` → apunta a `v_propuestas._id`
-- `v_politicos.propuestas_creadas[].id_propuesta` → apunta a `v_propuestas._id`
 - `v_propuestas.id_politico` → apunta a `v_politicos._id`
 - `v_propuestas.votos[].id_votante` → apunta a `v_votantes._id`
 - `v_politicos.cedula_politica` → apunta al archivo PDF en **GridFS**
