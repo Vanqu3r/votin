@@ -1,69 +1,75 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from app import mongo
-from app.schemas import PreferenciaSchema
+from app.schemas import VotanteSchema  # importamos el schema
 
-preferencias_bp = Blueprint('preferencias', __name__)
-dbPref = mongo.db.v_preferencias
+votantes_bp = Blueprint('votantes', __name__)
+db = mongo.db.v_votantes
 
-preferencia_schema = PreferenciaSchema()
+votante_schema = VotanteSchema()
 
-# Crear preferencias de un usuario
-@preferencias_bp.route('/', methods=['POST'])
-def create_preferencia():
+# Crear votante con validación
+@votantes_bp.route('/', methods=['POST'])
+def create_votante():
     try:
         data = request.json
-        errores = preferencia_schema.validate(data)
+        errores = votante_schema.validate(data)
         if errores:
             return jsonify({'errores': errores}), 400
-
-        usuario_id = data.get('usuario_id')
-
-        # Validar que el usuario exista (opcional)
-        usuario = mongo.db.v_usuario.find_one({'_id': ObjectId(usuario_id)})
-        if not usuario:
-            return jsonify({'error': 'Usuario no encontrado'}), 404
-
-        # Insertar o actualizar (si ya existen preferencias)
-        dbPref.update_one(
-            {'usuario_id': usuario_id},
-            {'$set': {'respuestas': data['respuestas']}},
-            upsert=True
-        )
-
-        return jsonify({'message': 'Preferencias guardadas correctamente'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# Obtener preferencias de un usuario
-@preferencias_bp.route('/<usuario_id>', methods=['GET'])
-def get_preferencias_usuario(usuario_id):
-    try:
-        preferencias = dbPref.find_one({'usuario_id': usuario_id})
-        if not preferencias:
-            return jsonify({'error': 'Preferencias no encontradas'}), 404
         
-        preferencias['_id'] = str(preferencias['_id'])
-        return jsonify(preferencias)
+        result = db.insert_one(data)
+        return jsonify({'message': 'Votante creado', 'id': str(result.inserted_id)}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Eliminar preferencias de un usuario
-@preferencias_bp.route('/<usuario_id>', methods=['DELETE'])
-def delete_preferencias_usuario(usuario_id):
+# Obtener todos los votantes
+@votantes_bp.route('/', methods=['GET'])
+def get_votantes():
+    votantes = []
+    for doc in db.find():
+        doc['_id'] = str(doc['_id'])
+        votantes.append(doc)
+    return jsonify(votantes)
+
+# Obtener un votante por ID
+@votantes_bp.route('/<id>', methods=['GET'])
+def get_votante(id):
+    votante = db.find_one({'_id': ObjectId(id)})
+    if not votante:
+        return jsonify({'error': 'Votante no encontrado'}), 404
+
+    votante['_id'] = str(votante['_id'])
+    return jsonify(votante)
+
+# Actualizar votante con validación
+@votantes_bp.route('/<id>', methods=['PUT'])
+def update_votante(id):
     try:
-        result = dbPref.delete_one({'usuario_id': usuario_id})
-        if result.deleted_count == 0:
-            return jsonify({'error': 'Preferencias no encontradas'}), 404
+        data = request.json
+        errores = votante_schema.validate(data, partial=True)
+        if errores:
+            return jsonify({'errores': errores}), 400
         
-        return jsonify({'message': 'Preferencias eliminadas correctamente'})
+        result = db.update_one({'_id': ObjectId(id)}, {'$set': data})
+        if result.matched_count == 0:
+            return jsonify({'error': 'Votante no encontrado'}), 404
+        
+        updated_votante = db.find_one({'_id': ObjectId(id)})
+        updated_votante['_id'] = str(updated_votante['_id'])
+        return jsonify(updated_votante)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# RUTA: Devuelve el formulario de preguntas y categorías
-@preferencias_bp.route('/preguntas', methods=['GET'])
+# Eliminar votante
+@votantes_bp.route('/<id>', methods=['DELETE'])
+def delete_votante(id):
+    db.delete_one({'_id': ObjectId(id)})
+    return jsonify({'message': 'Votante eliminado'})
+
+# Obetener preguntas de preferenicas
+@votantes_bp.route('/preguntas', methods=['GET'])
 def get_preguntas():
-    categorias_preguntas = {
+    preguntas = {
         "categorias": [
             {
                 "numero": 1,
@@ -158,4 +164,4 @@ def get_preguntas():
         ]
     }
 
-    return jsonify(categorias_preguntas)
+    return jsonify(preguntas)

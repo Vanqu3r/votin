@@ -3,3 +3,5 @@ flask-cors
 flask-pymongo
 pymongo
 marshmallow
+openia
+requests

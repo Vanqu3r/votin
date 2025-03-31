@@ -14,15 +14,13 @@ def create_app():
     CORS(app)
 
     # Registrar blueprints
-    from .routes.usuarios import usuarios_bp
-    from .routes.candidatos import candidatos_bp
+    from .routes.votantes import votantes_bp
+    from .routes.politicos import politicos_bp
     from .routes.propuestas import propuestas_bp
-    from .routes.preferencias import preferencias_bp
 
-    app.register_blueprint(usuarios_bp, url_prefix='/api/users')
-    app.register_blueprint(candidatos_bp, url_prefix='/api/candidates')
-    app.register_blueprint(propuestas_bp, url_prefix='/api/propuestas')
-    app.register_blueprint(preferencias_bp, url_prefix='/api/preferencias')
+    app.register_blueprint(votantes_bp, url_prefix='/api/votante')
+    app.register_blueprint(politicos_bp, url_prefix='/api/politico')
+    app.register_blueprint(propuestas_bp, url_prefix='/api/propuesta')
 
     # Ruta por defecto
     @app.route('/')
