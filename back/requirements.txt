@@ -2,10 +2,6 @@ Flask
 flask-cors
 flask-pymongo
 pymongo
-<<<<<<< HEAD
 marshmallow
 openia
 requests
-=======
-marshmallow
->>>>>>> 7bdf913356a6ba1e5bd137236b8393256ff40ebc
