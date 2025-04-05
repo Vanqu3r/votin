@@ -24,6 +24,7 @@ class VotanteSchema(Schema):
     nombre = fields.String(required=True, validate=validate.Length(min=1))
     apellido = fields.String(required=True, validate=validate.Length(min=1))
     edad = fields.Integer(required=True, validate=validate.Range(min=18))
+    correo = fields.Email(required=True) 
     codigo_postal = fields.String(required=True)
     colonia = fields.String(required=True)
     ciudad = fields.String(required=True)

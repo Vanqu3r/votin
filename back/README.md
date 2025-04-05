@@ -73,6 +73,7 @@ Cada documento representa un **votante**.
   nombre: String,
   apellido: String,
   edad: Number,
+  correo: String,
   codigo_postal: String,
   colonia: String,
   ciudad: String,
