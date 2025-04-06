@@ -1,0 +1,164 @@
+.registration-container {
+    min-height: 100vh;
+    background-color: white;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.registration-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.7rem;
+    position: relative;
+}
+
+.registration-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.button-login {
+    cursor: pointer;
+    border-radius: 0.7rem;
+    font-weight: bold;
+    height: fit-content;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s;
+}
+
+.submit-button {
+    background-color: #666EDA;
+    color: white;
+    border: none;
+    margin-left: auto;
+}
+
+.submit-button:hover {
+    background-color: #A6ADEB;
+}
+
+.back-button {
+    background-color: white;
+    border: 2px solid #666EDA;
+    color: #666EDA;
+    margin-right: auto;
+}
+
+.back-button:hover {
+    background-color: #DEE1FC;
+}
+
+.registration-select {
+    cursor: pointer;
+    border-radius: 0.7rem;
+    font-weight: bold;
+    padding: 5px 20px;
+    border: 2px solid #666EDA;
+    color: #666EDA;
+    max-height: fit-content;
+    margin-right: auto;
+}
+
+.registration-style {
+    background-color: white;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.7rem;
+    padding: 1.5rem;
+    width: 100%;
+    border: 2px solid #1d4ed8;
+}
+
+.registration-card {
+    background-color: white;
+    border-radius: 0.7rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    margin: auto;
+    margin-bottom: 15px;
+    width: 100%;
+    max-width: 36rem;
+    border: 2px solid #1d4ed8;
+}
+
+.registration-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #A6ADEB;
+}
+
+.registration-title-vote {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1d4ed8;
+}
+
+.extra {
+    font-weight: 900;
+    font-size: 1.4rem;
+    color: #666EDA;
+    margin-left: auto;
+    margin-right: auto;
+}
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.25rem;
+    max-width: 36rem;
+    margin: auto;
+    margin-bottom: 1.5rem;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-subheader {
+    width: 100%;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #666EDA;
+    margin-bottom: 0.5rem;
+}
+
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #DEE1FC;
+    margin-bottom: 0.25rem;
+}
+
+.form-input {
+    color: #666EDA;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #A6ADEB;
+    border-radius: 0.7rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #666EDA;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}

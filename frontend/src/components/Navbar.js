@@ -66,6 +66,11 @@ export const Navbar = () =>
                             Disabled
                         </Link>
                     </li>
+                    <li className="nav-item">
+                        <Link className="nav-link" to='/login'>
+                            Iniciar sesión
+                        </Link>
+                    </li>
                 </ul>
             </div>
         </div>

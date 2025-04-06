@@ -11,6 +11,7 @@ import ViewCandidates from './components/candidate/ViewCandidates';
 import { NewCandidate } from './components/candidate/NewCandidate.js';
 import ViewUser from './components/user/ViewUser.jsx';
 import { NewUser } from './components/user/NewUser.js';
+import Login from './components/Login.js';
 function App() {
   return (
     <Router>
@@ -23,6 +24,7 @@ function App() {
           <Route path="/newcandidate" element={<NewCandidate />} />
           <Route path="/viewuser" element={<ViewUser />} />
           <Route path="/newuser" element={<NewUser />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </Router>
