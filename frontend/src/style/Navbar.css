@@ -1,0 +1,112 @@
+/* Estilo para el botón principal de logout */
+.logout-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+}
+
+/* Estilos para el overlay (fondo oscuro) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(50, 50, 50, 0.8); /* Gris oscuro semitransparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px); /* Efecto de desenfoque opcional */
+}
+
+/* Estilos para el contenido de la modal (blanco) */
+.modal-content {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.modal-content p {
+  margin-bottom: 25px;
+  color: #555;
+  font-size: 1rem;
+}
+
+/* Contenedor de botones */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+/* Estilos base para botones de la modal */
+.modal-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+/* Botón de Cancelar */
+.modal-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.modal-cancel:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+/* Botón de Confirmar */
+.modal-confirm {
+  background-color: #dc3545;
+  color: white;
+}
+
+.modal-confirm:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+}
+
+/* Animación de aparición */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-overlay {
+  animation: modalFadeIn 0.3s ease-out;
+}

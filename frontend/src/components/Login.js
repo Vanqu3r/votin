@@ -1,8 +1,12 @@
-import { useState, useEffect } from 'react'; // Importar las funciones useState y useEffect
+import { useState } from 'react'; // Importar las funciones useState
 import '../style/Login.css'
+import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate para redireccionar
 const api_back = process.env.REACT_APP_BACK;
 
 const Login = () => {
+    const { login } = useAuth();
+    const navigate = useNavigate(); // Inicializar el hook useNavigate
     const [preferencias, setPreferencias] = useState([]); // Estado para almacenar las preferencias del usuario
     const [formData, setFormData] = useState({ // Estado para almacenar los datos del formulario
         user: 'Votante',
@@ -96,11 +100,21 @@ const Login = () => {
             }
 
             const result = await response.json();
-            alert("Registro exitoso!");
+
+            // Ejemplo de uso:
+            const mockUser = {
+                name: formData.nombre,
+                type: formData.user
+            };
+            login(mockUser);
+
+            alert(`¡Registro exitoso, ${formData.nombre}!`);
 
             // Resetear formulario
             setFormData(initialFormState);
             setPreferencias([]);
+
+            navigate('/'); // Redirigir a la página principal después del registro exitoso
 
         } catch (error) {
             console.error("Error completo:", error);

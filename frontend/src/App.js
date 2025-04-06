@@ -6,27 +6,31 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { About } from './components/About';
 import { User } from './components/Users';
-import { Navbar } from './components/Navbar';
+import Navbar from './components/Navbar';
 import ViewCandidates from './components/candidate/ViewCandidates';
 import { NewCandidate } from './components/candidate/NewCandidate.js';
 import ViewUser from './components/user/ViewUser.jsx';
 import { NewUser } from './components/user/NewUser.js';
 import Login from './components/Login.js';
+import { AuthProvider } from './components/AuthContext.js';
+
 function App() {
   return (
     <Router>
-      <Navbar />
-      <div >
-        <Routes>
-          <Route path="/about" element={<About />} />
-          <Route path="/user" element={<User />} />
-          <Route path="/viewcandidate" element={<ViewCandidates />} />
-          <Route path="/newcandidate" element={<NewCandidate />} />
-          <Route path="/viewuser" element={<ViewUser />} />
-          <Route path="/newuser" element={<NewUser />} />
-          <Route path="/login" element={<Login />} />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <Navbar />
+        <div >
+          <Routes>
+            <Route path="/about" element={<About />} />
+            <Route path="/user" element={<User />} />
+            <Route path="/viewcandidate" element={<ViewCandidates />} />
+            <Route path="/newcandidate" element={<NewCandidate />} />
+            <Route path="/viewuser" element={<ViewUser />} />
+            <Route path="/newuser" element={<NewUser />} />
+            <Route path="/login" element={<Login />} />
+          </Routes>
+        </div>
+      </AuthProvider>
     </Router>
   );
 }
