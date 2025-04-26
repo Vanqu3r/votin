@@ -1,5 +1,6 @@
 // context/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
+import { handleLogout } from "../api/firebase.config";
 
 const AuthContext = createContext();
 
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    handleLogout(); // Llama a la función de cierre de sesión de Firebase
   };
 
   return (

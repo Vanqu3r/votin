@@ -29,7 +29,7 @@ class VotanteSchema(Schema):
     colonia = fields.String(required=True)
     ciudad = fields.String(required=True)
     estado = fields.String(required=True)
-    preferencias = fields.Nested(PreferenciasSchema)
+    preferencias = fields.List(fields.Raw())
     analisis = fields.String()
     propuestas_votadas = fields.List(fields.Nested(PropuestaVotadaSchema))
 

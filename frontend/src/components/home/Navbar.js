@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// import { useAuth } from "../AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { signInWithGoogle } from "../../api/firebase.config"; // Asegúrate de importar las funciones de autenticación
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
@@ -8,9 +8,8 @@ import axios from "axios";
 const api_back = process.env.REACT_APP_BACK;
 
 const Navbar = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  // const { userL, isLoading } = useAuth();
 
   const [user, setUser] = useState(null);
 
@@ -54,6 +53,20 @@ const Navbar = () => {
       );
 
       if (response?.data?.correo) {
+        const userk = {
+          uid: response.data._id,
+          nombre: response.data.nombre,
+          apellido: response.data.apellido,
+          edad: response.data.edad,
+          correo: response.data.correo,
+          codigo_postal: response.data.codigo_postal,
+          colonia: response.data.colonia,
+          ciudad: response.data.ciudad,
+          estado: response.data.estado,
+        };
+
+        login(userk);
+
         navigate("/dashboard"); // Usuario existe
       } else {
         navigate("/login"); // Usuario no tiene correo

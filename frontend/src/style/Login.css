@@ -33,11 +33,10 @@
     transition: background-color 0.2s;
 }
 
-.submit-button {
+.submit-button-login {
     background-color: #666EDA;
     color: white;
     border: none;
-    margin-left: auto;
 }
 
 .submit-button:hover {

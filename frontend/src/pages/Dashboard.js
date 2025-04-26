@@ -1,27 +1,19 @@
 import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 import { useState, useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-// import { useAuth } from "../context/authContext";
-
-// import { useUser } from "../context/userContext";
-import { handleLogout } from "../api/firebase.config"; // Asegúrate de importar las funciones de autenticación
-
 export default function Dashboard() {
-  //   const { user, logout } = useAuth();
-//   const { userData, getUserData } = useUser();
+  const { user, logout } = useAuth();
+  //   const { userData, getUserData } = useUser();
   const navigate = useNavigate();
-
-  /* useEffect(() => {
-    getUserData(user.uid);
-  }, [user.uid, getUserData]); */
 
   // Función para manejar el cierre de sesión
   const handleLogoutClick = async () => {
-    await handleLogout(); // Llamamos a la función de cierre de sesión de Firebase
-    navigate("/"); // Redirigir a la página principal después de cerrar sesión
+    await logout(); // Llamamos a la función de cierre de sesión del contexto
+    navigate("/"); // Redirigimos a la página de inicio después de cerrar sesión
   };
 
   return (

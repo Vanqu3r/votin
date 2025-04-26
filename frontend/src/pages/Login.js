@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"; // Importar las funciones useState
 import "../style/Login.css";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom"; // Importar useNavigate para redireccionar
 import { handleLogout } from "../api/firebase.config"; // Asegúrate de importar las funciones de autenticación
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -10,17 +10,14 @@ const api_back = process.env.REACT_APP_BACK;
 
 function obtenerNombreApellido(displayName) {
   const partes = displayName.trim().split(" ");
-
   if (partes.length < 2) {
     return {
       nombres: displayName,
       apellidos: "",
     };
   }
-
   const nombres = partes.slice(0, partes.length - 2).join(" ");
   const apellidos = partes.slice(-2).join(" ");
-
   return {
     nombres,
     apellidos,
@@ -28,11 +25,12 @@ function obtenerNombreApellido(displayName) {
 }
 
 const Login = () => {
+  const [userg, setUserg] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate(); // Inicializar el hook useNavigate
   const [preferencias, setPreferencias] = useState([]); // Estado para almacenar las preferencias del usuario
+  // Estado para almacenar los datos del formulario
   const [formData, setFormData] = useState({
-    // Estado para almacenar los datos del formulario
     user: "Votante",
     nombre: "",
     apellido: "",
@@ -46,13 +44,11 @@ const Login = () => {
     cedula_politica: "",
   });
 
-  const [user, setUser] = useState(null);
-
   // useEffect
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      setUserg(currentUser);
     });
 
     return () => {
@@ -60,15 +56,21 @@ const Login = () => {
     };
   }, []);
 
-  // Extraer el nombre y apellido del usuario autenticado
-  if (user !== null) {
-    var resultado = obtenerNombreApellido(user.displayName);
-    formData.nombre = resultado.nombres;
-    formData.apellido = resultado.apellidos;
-    formData.correo = user.email;
-  }
+  // useEffect que se dispara cuando cambia userg
+  useEffect(() => {
+    if (userg !== null) {
+      const resultado = obtenerNombreApellido(userg.displayName);
 
-  // Manejar cambios en los campos del formulario
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        nombre: resultado.nombres,
+        apellido: resultado.apellidos,
+        correo: userg.email,
+      }));
+    }
+  }, [userg]);
+
+  // MANEJAR LOS CAMBIOS EN EL FORMULARIO
   const handleChange = (e) => {
     const { name, value } = e.target; // Desestructurar el evento para obtener el nombre y valor del campo
 
@@ -87,7 +89,7 @@ const Login = () => {
     });
   };
 
-  // Función para verificar el tipo de usuario (Mostrar opciones para candidato)
+  // FUNCION PARA VERIFICAR EL TIPO DE USUARIO (Mostrar opciones para candidato)
   const tipoUsuario = (usuario) => {
     if (usuario === "Votante") {
       return true;
@@ -98,7 +100,7 @@ const Login = () => {
     }
   };
 
-  // Manejar el envío del formulario
+  // ENVIO DE DATOS | REGISTRO
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -108,8 +110,6 @@ const Login = () => {
       const endpoint = `${cleanApiBack}${
         cleanApiBack.endsWith("/") ? "" : "/"
       }${formData.user === "Votante" ? "votante/" : "politico/"}`;
-
-      console.log("Endpoint completo:", endpoint); // Verificar en consola
 
       const requestData = {
         nombre: formData.nombre,
@@ -148,20 +148,27 @@ const Login = () => {
         throw new Error(`Error HTTP: ${response.status}`);
       }
 
-      // Ejemplo de uso:
-      const mockUser = {
-        name: formData.nombre,
-        type: formData.user,
-      };
-      login(mockUser);
+      const responseDataK = await response.json();
 
-      alert(`¡Registro exitoso, ${formData.nombre}!`);
+      const userk = {
+        uid: responseDataK.votante._id,
+        nombre: responseDataK.votante.nombre,
+        apellido: responseDataK.votante.apellido,
+        edad: responseDataK.votante.edad,
+        correo: responseDataK.votante.correo,
+        codigo_postal: responseDataK.votante.codigo_postal,
+        colonia: responseDataK.votante.colonia,
+        ciudad: responseDataK.votante.ciudad,
+        estado: responseDataK.votante.estado,
+      };
+
+      login(userk);
 
       // Resetear formulario
       setFormData(initialFormState);
       setPreferencias([]);
 
-      navigate("/"); // Redirigir a la página principal después del registro exitoso
+      navigate("/dashboard"); // Redirigir a la página principal después del registro exitoso
     } catch (error) {
       console.error("Error completo:", error);
       alert("Error en el registro: " + error.message);
@@ -241,7 +248,6 @@ const Login = () => {
       setAddressData([]);
     }
   };
-  // FIN CODIGO POSTAL
 
   const handleAddressSelect = (address) => {
     setFormData({
@@ -252,6 +258,7 @@ const Login = () => {
       estado: address.response.estado,
     });
   };
+  // FIN CODIGO POSTAL
 
   return (
     <form className="registration-container" onSubmit={handleSubmit}>
@@ -265,7 +272,7 @@ const Login = () => {
         <label className="registration-title">
           Auto<label className="registration-title-vote">Vote</label>
         </label>
-        <button className="button-login submit-button" type="submit">
+        <button className="button-login submit-button-login" type="submit">
           Continuar
         </button>
       </div>
@@ -380,7 +387,8 @@ const Login = () => {
                       <option value="">Selecciona una colonia</option>
                       {addressData.map((item, index) => (
                         <option key={index} value={index}>
-                          {item.response.asentamiento || "Colonia no especificada"}
+                          {item.response.asentamiento ||
+                            "Colonia no especificada"}
                         </option>
                       ))}
                     </select>
