@@ -1,311 +1,483 @@
-import { useState } from 'react'; // Importar las funciones useState
-import '../style/Login.css'
-import { useAuth } from './AuthContext';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate para redireccionar
+import { useState, useEffect } from "react"; // Importar las funciones useState
+import "../style/Login.css";
+import { useAuth } from "./AuthContext";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate para redireccionar
+import { handleLogout } from "../api/firebase.config"; // Asegúrate de importar las funciones de autenticación
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import axios from "axios";
+
 const api_back = process.env.REACT_APP_BACK;
 
+function obtenerNombreApellido(displayName) {
+  const partes = displayName.trim().split(" ");
+
+  if (partes.length < 2) {
+    return {
+      nombres: displayName,
+      apellidos: "",
+    };
+  }
+
+  const nombres = partes.slice(0, partes.length - 2).join(" ");
+  const apellidos = partes.slice(-2).join(" ");
+
+  return {
+    nombres,
+    apellidos,
+  };
+}
+
 const Login = () => {
-    const { login } = useAuth();
-    const navigate = useNavigate(); // Inicializar el hook useNavigate
-    const [preferencias, setPreferencias] = useState([]); // Estado para almacenar las preferencias del usuario
-    const [formData, setFormData] = useState({ // Estado para almacenar los datos del formulario
-        user: 'Votante',
-        nombre: '',
-        apellido: '',
-        edad: 18,
-        correo: '',
-        codigo_postal: '',
-        colonia: '',
-        ciudad: '',
-        estado: '',
-        candidatura: '',
-        cedula_politica: '',
+  const { login } = useAuth();
+  const navigate = useNavigate(); // Inicializar el hook useNavigate
+  const [preferencias, setPreferencias] = useState([]); // Estado para almacenar las preferencias del usuario
+  const [formData, setFormData] = useState({
+    // Estado para almacenar los datos del formulario
+    user: "Votante",
+    nombre: "",
+    apellido: "",
+    edad: 18,
+    correo: "",
+    codigo_postal: "",
+    colonia: "",
+    ciudad: "",
+    estado: "",
+    candidatura: "",
+    cedula_politica: "",
+  });
+
+  const [user, setUser] = useState(null);
+
+  // useEffect
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
     });
 
-    // Manejar cambios en los campos del formulario
-    const handleChange = (e) => {
-        const { name, value } = e.target; // Desestructurar el evento para obtener el nombre y valor del campo
-
-        if (name === 'user' && value === 'Candidato') {
-            setFormData({
-                ...formData,
-                candidatura: '',
-                cedula_politica: '',
-            });
-            setPreferencias([]);
-        }
-
-        setFormData(({
-            ...formData, // Copiamos todos los valores anteriores
-            [name]: value // Actualizamos solo el campo que cambió
-        }));
+    return () => {
+      unsubscribe();
     };
+  }, []);
 
-    // Función para verificar el tipo de usuario
-    const tipoUsuario = (usuario) => {
-        if (usuario === 'Votante') {
-            return true;
-        } else if (usuario === 'Candidato') {
-            return false;
-        } else {
-            return true;
-        }
-    };
+  // Extraer el nombre y apellido del usuario autenticado
+  if (user !== null) {
+    var resultado = obtenerNombreApellido(user.displayName);
+    formData.nombre = resultado.nombres;
+    formData.apellido = resultado.apellidos;
+    formData.correo = user.email;
+  }
 
-    // Manejar el envío del formulario
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  // Manejar cambios en los campos del formulario
+  const handleChange = (e) => {
+    const { name, value } = e.target; // Desestructurar el evento para obtener el nombre y valor del campo
 
-        try {
-            // Asegurar que la URL no tenga doble barra y termine con barra
-            const cleanApiBack = api_back.replace(/([^:]\/)\/+/g, '$1'); // Eliminar dobles barras
-            const endpoint = `${cleanApiBack}${cleanApiBack.endsWith('/') ? '' : '/'}${formData.user === 'Votante' ? 'votante/' : 'politico/'
-                }`;
+    if (name === "user" && value === "Candidato") {
+      setFormData({
+        ...formData,
+        candidatura: "",
+        cedula_politica: "",
+      });
+      setPreferencias([]);
+    }
 
-            console.log("Endpoint completo:", endpoint); // Verificar en consola
+    setFormData({
+      ...formData, // Copiamos todos los valores anteriores
+      [name]: value, // Actualizamos solo el campo que cambió
+    });
+  };
 
-            const requestData = {
-                nombre: formData.nombre,
-                apellido: formData.apellido,
-                edad: formData.edad,
-                correo: formData.correo,
-                codigo_postal: formData.codigo_postal,
-                colonia: formData.colonia,
-                ciudad: formData.ciudad,
-                estado: formData.estado,
-                ...(formData.user === 'Votante' ? {
-                    propuestas_votadas: []
-                } : {
-                    candidatura: formData.candidatura,
-                    cedula_politica: formData.cedula_politica,
-                    validacion: false
-                })
-            };
+  // Función para verificar el tipo de usuario (Mostrar opciones para candidato)
+  const tipoUsuario = (usuario) => {
+    if (usuario === "Votante") {
+      return true;
+    } else if (usuario === "Candidato") {
+      return false;
+    } else {
+      return true;
+    }
+  };
 
-            // Agregar preferencias solo si existen y es votante
-            if (formData.user === 'Votante' && preferencias.length > 0) {
-                requestData.preferencias = preferencias;
+  // Manejar el envío del formulario
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Asegurar que la URL no tenga doble barra y termine con barra
+      const cleanApiBack = api_back.replace(/([^:]\/)\/+/g, "$1"); // Eliminar dobles barras
+      const endpoint = `${cleanApiBack}${
+        cleanApiBack.endsWith("/") ? "" : "/"
+      }${formData.user === "Votante" ? "votante/" : "politico/"}`;
+
+      console.log("Endpoint completo:", endpoint); // Verificar en consola
+
+      const requestData = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        edad: formData.edad,
+        correo: formData.correo,
+        codigo_postal: formData.codigo_postal,
+        colonia: formData.colonia,
+        ciudad: formData.ciudad,
+        estado: formData.estado,
+        ...(formData.user === "Votante"
+          ? {
+              propuestas_votadas: [],
             }
+          : {
+              candidatura: formData.candidatura,
+              cedula_politica: formData.cedula_politica,
+              validacion: false,
+            }),
+      };
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData)
-            });
+      // Agregar preferencias solo si existen y es votante
+      if (formData.user === "Votante" && preferencias.length > 0) {
+        requestData.preferencias = preferencias;
+      }
 
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
 
-            const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
 
-            // Ejemplo de uso:
-            const mockUser = {
-                name: formData.nombre,
-                type: formData.user
-            };
-            login(mockUser);
+      // Ejemplo de uso:
+      const mockUser = {
+        name: formData.nombre,
+        type: formData.user,
+      };
+      login(mockUser);
 
-            alert(`¡Registro exitoso, ${formData.nombre}!`);
+      alert(`¡Registro exitoso, ${formData.nombre}!`);
 
-            // Resetear formulario
-            setFormData(initialFormState);
-            setPreferencias([]);
+      // Resetear formulario
+      setFormData(initialFormState);
+      setPreferencias([]);
 
-            navigate('/'); // Redirigir a la página principal después del registro exitoso
+      navigate("/"); // Redirigir a la página principal después del registro exitoso
+    } catch (error) {
+      console.error("Error completo:", error);
+      alert("Error en el registro: " + error.message);
+    }
+  };
 
-        } catch (error) {
-            console.error("Error completo:", error);
-            alert("Error en el registro: " + error.message);
+  // Función para manejar el cierre de sesión
+  const handleLogoutClick = async () => {
+    await handleLogout(); // Llamamos a la función de cierre de sesión de Firebase
+    navigate("/"); // Redirigir a la página principal después de cerrar sesión
+  };
+
+  // Estado inicial fuera del componente
+  const initialFormState = {
+    user: "Votante",
+    nombre: "",
+    apellido: "",
+    edad: 18,
+    correo: "",
+    codigo_postal: "",
+    colonia: "",
+    ciudad: "",
+    estado: "",
+    candidatura: "",
+    cedula_politica: "",
+  };
+
+  // PARA CODIGO POSTAL
+  const [postalCode, setPostalCode] = useState("");
+  const [addressData, setAddressData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handlePostalCodeChange = async (e) => {
+    const cp = e.target.value.replace(/\D/g, "");
+    setPostalCode(cp);
+    setError(null);
+
+    if (cp.length === 5) {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `https://api.copomex.com/query/info_cp/${cp}?token=591a2db3-0048-4dce-91cf-12b7e5bfa4bd`
+        );
+
+        // Verificación segura de la respuesta
+        const data = response.data;
+
+        if (!data) {
+          throw new Error("No se recibieron datos");
         }
-    };
 
-    // Estado inicial fuera del componente
-    const initialFormState = {
-        user: 'Votante',
-        nombre: '',
-        apellido: '',
-        edad: 18,
-        correo: '',
-        codigo_postal: '',
-        colonia: '',
-        ciudad: '',
-        estado: '',
-        candidatura: '',
-        cedula_politica: ''
-    };
+        // Maneja diferentes estructuras de respuesta
+        const addresses = data.error
+          ? []
+          : data.response
+          ? data.response
+          : Array.isArray(data)
+          ? data
+          : [];
 
-    return (
-        <form className="registration-container" onSubmit={handleSubmit}>
+        if (addresses.length === 0) {
+          setError("No se encontraron resultados para este código postal");
+        }
 
-            <div className='registration-header'>
-                <button className="button-login back-button" onClick={() => window.history.back()}>Cancelar</button>
-                <label className="registration-title">Auto<label className="registration-title-vote">Vote</label></label>
-                <button className="button-login submit-button" type='submit'>Continuar</button>
+        console.log("Direcciones obtenidas:", addresses); // Verificar en consola
+
+        setAddressData(addresses);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Error al buscar el código postal. Intenta nuevamente.");
+        setAddressData([]);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setAddressData([]);
+    }
+  };
+  // FIN CODIGO POSTAL
+
+  const handleAddressSelect = (address) => {
+    setFormData({
+      ...formData,
+      codigo_postal: postalCode,
+      colonia: address.response.asentamiento,
+      ciudad: address.response.municipio,
+      estado: address.response.estado,
+    });
+  };
+
+  return (
+    <form className="registration-container" onSubmit={handleSubmit}>
+      <div className="registration-header">
+        <button
+          className="button-login back-button"
+          onClick={handleLogoutClick}
+        >
+          Cancelar
+        </button>
+        <label className="registration-title">
+          Auto<label className="registration-title-vote">Vote</label>
+        </label>
+        <button className="button-login submit-button" type="submit">
+          Continuar
+        </button>
+      </div>
+
+      <div className="registration-style">
+        <div className="section-header">
+          <label className="extra">Datos adicionales de registro</label>
+          <select
+            className="registration-select"
+            onChange={handleChange}
+            name="user"
+            value={formData.user}
+          >
+            <option value="Votante">Votante</option>
+            <option value="Candidato">Candidato</option>
+          </select>
+        </div>
+
+        <div className="registration-card">
+          <div className="form-section">
+            <label className="form-subheader">Personales</label>
+            <div className="form-fields">
+              <div className="form-group">
+                <label className="form-label">Nombre</label>
+                <input
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  type="text"
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Apellido</label>
+                <input
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  type="text"
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Edad</label>
+                <input
+                  name="edad"
+                  onChange={handleChange}
+                  type="number"
+                  min="18"
+                  value={formData.edad}
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Correo</label>
+                <input
+                  name="correo"
+                  value={formData.correo}
+                  onChange={handleChange}
+                  type="email"
+                  className="form-input"
+                  required
+                  disabled
+                />
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div className="registration-style">
+        {/* Sección de búsqueda de ubicación */}
+        <div className="registration-card">
+          <div className="form-section">
+            <label className="form-subheader">Ubicación</label>
 
-                <div className="section-header">
-                    <label className='extra'>Datos adicionales de registro</label>
+            <div className="location-search-container">
+              <div className="mb-3">
+                <label htmlFor="postalCode" className="form-label">
+                  Buscar por Código Postal
+                </label>
+                <div className="search-input-group">
+                  <input
+                    type="text"
+                    className="form-input"
+                    id="postalCode"
+                    maxLength="5"
+                    value={postalCode}
+                    onChange={handlePostalCodeChange}
+                    placeholder="Ej. 11520"
+                  />
+                  {loading && (
+                    <div className="search-loading">
+                      <span className="spinner"></span> Buscando...
+                    </div>
+                  )}
+                  {error && <div className="search-error">{error}</div>}
+                </div>
+              </div>
+
+              {addressData.length > 0 && (
+                <div className="location-results">
+                  <div className="mb-3">
+                    <label className="form-label">Colonias disponibles</label>
                     <select
-                        className='registration-select'
-                        onChange={handleChange}
-                        name='user'
-                        value={formData.user}
+                      className="form-select"
+                      onChange={(e) =>
+                        handleAddressSelect(addressData[e.target.value])
+                      }
                     >
-                        <option value="Votante">Votante</option>
-                        <option value="Candidato">Candidato</option>
+                      <option value="">Selecciona una colonia</option>
+                      {addressData.map((item, index) => (
+                        <option key={index} value={index}>
+                          {item.response.asentamiento || "Colonia no especificada"}
+                        </option>
+                      ))}
                     </select>
+                  </div>
                 </div>
-
-                <div className='registration-card'>
-
-                    <div className="form-section">
-                        <label className="form-subheader">Personales</label>
-                        <div className="form-fields">
-                            <div className="form-group">
-                                <label className="form-label">Nombre</label>
-                                <input
-                                    name='nombre'
-                                    value={formData.nombre}
-                                    onChange={handleChange}
-                                    type="text"
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Apellido</label>
-                                <input
-                                    name='apellido'
-                                    value={formData.apellido}
-                                    onChange={handleChange}
-                                    type="text"
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Edad</label>
-                                <input
-                                    name='edad'
-                                    onChange={handleChange}
-                                    type="number"
-                                    min='18'
-                                    value={formData.edad}
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Correo</label>
-                                <input
-                                    name='correo'
-                                    value={formData.correo}
-                                    onChange={handleChange}
-                                    type="email"
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className='registration-card'>
-                    <div className="form-section">
-                        <label className="form-subheader">Ubicación</label>
-                        <div className="form-fields">
-                            <div className="form-group">
-                                <label className="form-label">Código postal</label>
-                                <input
-                                    name='codigo_postal'
-                                    value={formData.codigo_postal}
-                                    onChange={handleChange}
-                                    type="text"
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Colonia</label>
-                                <input
-                                    name='colonia'
-                                    value={formData.colonia}
-                                    onChange={handleChange}
-                                    type="text"
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Ciudad</label>
-                                <input
-                                    name='ciudad'
-                                    value={formData.ciudad}
-                                    onChange={handleChange}
-                                    type="text"
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Estado</label>
-                                <input
-                                    name='estado'
-                                    value={formData.estado}
-                                    onChange={handleChange}
-                                    type="text"
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {!tipoUsuario(formData.user) && (
-                    <div className='registration-card'>
-                        <div className="form-section">
-                            <div className="form-fields">
-                                <div className="form-group">
-                                    <label className="form-label">Candidatura</label>
-                                    <select
-                                        name='candidatura'
-                                        value={formData.candidatura}
-                                        onChange={handleChange}
-                                        type="text"
-                                        className="form-input"
-                                        required
-                                    >
-                                        <option value="">Seleccione una opción</option>
-                                        <option value="presidente">Presidente</option>
-                                        <option value="gobernador">Gobernador</option>
-                                        <option value="presidente municipal">Presidente Municipal</option>
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Cédula política</label>
-                                    <input
-                                        name='cedula_politica'
-                                        value={formData.cedula_politica}
-                                        onChange={handleChange}
-                                        type="text"
-                                        className="form-input"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
+              )}
             </div>
-        </form>
-    );
+
+            <div className="form-fields">
+              <div className="form-group">
+                <label className="form-label">Código postal</label>
+                <input
+                  name="codigo_postal"
+                  value={formData.codigo_postal}
+                  onChange={handleChange}
+                  type="text"
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Colonia</label>
+                <input
+                  name="colonia"
+                  value={formData.colonia}
+                  onChange={handleChange}
+                  type="text"
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Ciudad</label>
+                <input
+                  name="ciudad"
+                  value={formData.ciudad}
+                  onChange={handleChange}
+                  type="text"
+                  className="form-input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Estado</label>
+                <input
+                  name="estado"
+                  value={formData.estado}
+                  onChange={handleChange}
+                  type="text"
+                  className="form-input"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {!tipoUsuario(formData.user) && (
+          <div className="registration-card">
+            <div className="form-section">
+              <div className="form-fields">
+                <label className="form-subheader">Candidato</label>
+                <div className="form-group">
+                  <label className="form-label">Candidatura</label>
+                  <select
+                    name="candidatura"
+                    value={formData.candidatura}
+                    onChange={handleChange}
+                    className="form-input"
+                    required
+                  >
+                    <option value="">Seleccione una opción</option>
+                    <option value="presidente">Presidente</option>
+                    <option value="gobernador">Gobernador</option>
+                    <option value="presidente municipal">
+                      Presidente Municipal
+                    </option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Cédula política</label>
+                  <input
+                    name="cedula_politica"
+                    value={formData.cedula_politica}
+                    onChange={handleChange}
+                    type="text"
+                    className="form-input"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </form>
+  );
 };
 
 export default Login;

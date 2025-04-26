@@ -162,6 +162,7 @@ Cada documento representa una **propuesta política**.
 | POST   | `/api/votante/`                  | Crear un nuevo votante con validación      |
 | GET    | `/api/votante/`                  | Obtener todos los votantes                 |
 | GET    | `/api/votante/<id>`              | Obtener un votante por su ID               |
+| GET    | `/api/votante/correo/<correo>`   | Obtener un votante por su CORREO           |
 | PUT    | `/api/votante/<id>`              | Actualizar votante por ID con validación   |
 | DELETE | `/api/votante/<id>`              | Eliminar un votante por ID                 |
 | GET    | `/api/votante/preguntas`         | Obtener preguntas sobre preferencias       |

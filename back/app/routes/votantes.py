@@ -41,6 +41,16 @@ def get_votante(id):
     votante['_id'] = str(votante['_id'])
     return jsonify(votante)
 
+# Obtener un votante por CORREO
+@votantes_bp.route('/correo/<correo>', methods=['GET'])
+def get_votante_by_correo(correo):
+    votante = db.find_one({'correo': correo})
+    if not votante:
+        return jsonify({'error': 'Votante no encontrado'}), 404
+
+    votante['_id'] = str(votante['_id'])
+    return jsonify(votante)
+
 # Actualizar votante con validación
 @votantes_bp.route('/<id>', methods=['PUT'])
 def update_votante(id):
