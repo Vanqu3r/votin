@@ -16,15 +16,12 @@ def create_politico():
 
         # Valida y deserializa los datos
         politico_data = politico_schema.load(data)
-
-        # Verificar que cedula_politica sea un ObjectId válido
-        # if not ObjectId.is_valid(politico_data.get("cedula_politica", "")):
-        #     return jsonify({"error": "Cédula política inválida"}), 400
-
-        # Insertar en la colección v_politicos
         result = db.insert_one(politico_data)
+        
+        politico_creado = db.find_one({'_id': result.inserted_id}) # Buscar el politico creado
+        politico_creado['_id'] = str(politico_creado['_id']) # Convertir _id a string para poder enviarlo en JSON
 
-        return jsonify({'message': 'Político creado', 'id': str(result.inserted_id)}), 201
+        return jsonify(politico_creado), 201
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

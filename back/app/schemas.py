@@ -5,19 +5,6 @@ from datetime import datetime
 class PropuestaVotadaSchema(Schema):
     id_propuesta = fields.String(required=True)
 
-# VOTANTE: Schema para preferencias
-class PreferenciasSchema(Schema):
-    # Claves: "1" a "10"
-    # Valores: listas de exactamente 3 números entre 1 y 5
-    preferencias = fields.Dict(
-        keys=fields.String(validate=validate.OneOf([str(i) for i in range(1, 11)])),
-        values=fields.List(
-            fields.Integer(validate=validate.Range(min=1, max=5)),
-            validate=validate.Length(equal=3)
-        ),
-        required=True
-    )
-
 # VOTANTE: Schema para Votante
 class VotanteSchema(Schema):
     id = fields.String(dump_only=True)

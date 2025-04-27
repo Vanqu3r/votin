@@ -1,15 +1,15 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAQseK--duEXrmQqO1bKunWhQHfMR1_2d0",
-  authDomain: "votin-28103.firebaseapp.com",
-  projectId: "votin-28103",
-  storageBucket: "votin-28103.firebasestorage.app",
-  messagingSenderId: "1083169607884",
-  appId: "1:1083169607884:web:4358e613a26fe5e947b269",
-  measurementId: "G-0LWR3YR1X4"
+  apiKey: "AIzaSyD2Jl1cDs7A2KFyuJdKiEfmrxrvzqyn5Po",
+  authDomain: "autovote-41365.firebaseapp.com",
+  projectId: "autovote-41365",
+  storageBucket: "autovote-41365.firebasestorage.app",
+  messagingSenderId: "153827688625",
+  appId: "1:153827688625:web:0b38e601f18e517dc1a290"
 };
 
 // Inicializa Firebase
@@ -18,6 +18,8 @@ const app = initializeApp(firebaseConfig);
 // Autenticación de Firebase
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+// Almacén de Firebase
+const storage = getStorage(app);
 
 // Función para iniciar sesión con Google
 export const signInWithGoogle = async () => {
@@ -41,3 +43,5 @@ export const handleLogout = async () => {
     console.error("Error al cerrar sesión: ", error);
   }
 };
+
+export { storage, ref, uploadBytes, getDownloadURL };

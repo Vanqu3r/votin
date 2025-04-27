@@ -6,9 +6,17 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   //   const { userData, getUserData } = useUser();
   const navigate = useNavigate();
+
+  // VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
+  /* useEffect(() => {
+    // Solo redirige cuando la carga ha terminado Y no hay usuario
+    if (!isLoading && !user) {
+      navigate("/");
+    }
+  }, [user, isLoading, navigate]); */
 
   // Función para manejar el cierre de sesión
   const handleLogoutClick = async () => {
@@ -19,14 +27,10 @@ export default function Dashboard() {
   return (
     <div className="container mt-5">
       <h1>Dashboard</h1>
-      {/* <h2>Welcome, {user.email}</h2> */}
+      {user?.correo ? <h3>Bienvenido, {user.correo}</h3> : <h3>Bienvenido</h3>}
       <button className="btn btn-danger" onClick={handleLogoutClick}>
         Logout
       </button>
-      {/* <div className="mt-5">
-        <h3>User Data</h3>
-        {userData && <pre>{JSON.stringify(userData, null, 2)}</pre>}
-      </div> */}
     </div>
   );
 }

@@ -1,22 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "../style/Preferencias.css"; // Asegúrate de tener este archivo CSS para los estilos
 import apiClient from "../api/client"; // Asegúrate de que esta ruta sea correcta
 
 const Preferencias = () => {
-  const { currentUser } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState([]);
   const [respuestas, setRespuestas] = useState({});
 
-  // Verificar autenticación
-  useEffect(() => {
-    if (!currentUser) {
-      // Redirigir a login si no está autenticado
+  // VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
+  /* useEffect(() => {
+    // Solo redirige cuando la carga ha terminado Y no hay usuario
+    if (!isLoading && !user) {
       navigate("/");
     }
-  }, [currentUser]);
+    
+  }, [user, isLoading, navigate]); */
+
+  console.log("Preferencias.js - user:");
+  
 
   useEffect(() => {
     const fetchPreguntas = async () => {
@@ -70,10 +74,8 @@ const Preferencias = () => {
           };
         }),
       };
-
-      const usuario_id = "67ea3f2db4d5cd6ae933a6ac";
-
-      console.log("Datos a enviar:", datosParaAPI);
+      
+      const usuario_id = user.uid;
 
       // 3. Enviar los datos a la API
       const response = await apiClient.put(
@@ -86,7 +88,7 @@ const Preferencias = () => {
         }
       );
 
-      console.log("Respuesta del servidor:", response.data);
+      navigate("/dashboard");
     } catch (err) {
       console.error("Error detallado:", err.response);
     }

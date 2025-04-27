@@ -2,12 +2,20 @@ import { useState, useEffect } from "react"; // Importar las funciones useState
 import "../style/Login.css";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom"; // Importar useNavigate para redireccionar
-import { handleLogout } from "../api/firebase.config"; // Asegúrate de importar las funciones de autenticación
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
+// FIREBASE
+import {
+  handleLogout,
+  storage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "../api/firebase.config";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const api_back = process.env.REACT_APP_BACK;
 
+// FUNCION PARA SEPARAR NOMBRE Y APELLIDO
 function obtenerNombreApellido(displayName) {
   const partes = displayName.trim().split(" ");
   if (partes.length < 2) {
@@ -25,8 +33,41 @@ function obtenerNombreApellido(displayName) {
 }
 
 const Login = () => {
+  // Firebase files
+  const [file, setFile] = useState(null);
+  const [downloadURL, setDownloadURL] = useState("");
+
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      console.log("Por favor selecciona un archivo");
+      return;
+    }
+
+    try {
+      // 1. Crear referencia con nombre único
+      const fileName = `files/${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, fileName);
+
+      // 2. Subir el archivo
+      const snapshot = await uploadBytes(storageRef, file);
+
+      // 3. Obtener URL (usando la referencia del snapshot)
+      const url = await getDownloadURL(snapshot.ref);
+      setDownloadURL(url);
+      formData.cedula_politica = url;
+    } catch (err) {
+      console.error("Error completo:", err);
+    }
+  };
+  // Fin Firebase files
   const [userg, setUserg] = useState(null);
-  const { login } = useAuth();
+  const { user, login, isLoading } = useAuth();
   const navigate = useNavigate(); // Inicializar el hook useNavigate
   const [preferencias, setPreferencias] = useState([]); // Estado para almacenar las preferencias del usuario
   // Estado para almacenar los datos del formulario
@@ -43,6 +84,14 @@ const Login = () => {
     candidatura: "",
     cedula_politica: "",
   });
+
+  // VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
+  useEffect(() => {
+    // Solo redirige cuando la carga ha terminado Y no hay usuario
+    if (!isLoading && user) {
+      navigate("/dashboard"); // Redirigir a la página de inicio si el usuario no está autenticado
+    }
+  }, [isLoading]);
 
   // useEffect
   useEffect(() => {
@@ -111,6 +160,18 @@ const Login = () => {
         cleanApiBack.endsWith("/") ? "" : "/"
       }${formData.user === "Votante" ? "votante/" : "politico/"}`;
 
+      if (formData.user === "Candidato") {
+        try {
+          await handleUpload(); // Llamar a la función de carga de archivos
+        } catch (error) {
+          console.error("Error al subir el archivo:", error);
+          return;
+        }
+      }
+
+      let pref = true;
+      if (formData.user === "Candidato") pref = false;
+
       const requestData = {
         nombre: formData.nombre,
         apellido: formData.apellido,
@@ -136,6 +197,8 @@ const Login = () => {
         requestData.preferencias = preferencias;
       }
 
+      console.log("Datos a enviar:", requestData); // Verificar en consola
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -151,15 +214,15 @@ const Login = () => {
       const responseDataK = await response.json();
 
       const userk = {
-        uid: responseDataK.votante._id,
-        nombre: responseDataK.votante.nombre,
-        apellido: responseDataK.votante.apellido,
-        edad: responseDataK.votante.edad,
-        correo: responseDataK.votante.correo,
-        codigo_postal: responseDataK.votante.codigo_postal,
-        colonia: responseDataK.votante.colonia,
-        ciudad: responseDataK.votante.ciudad,
-        estado: responseDataK.votante.estado,
+        uid: responseDataK._id,
+        nombre: responseDataK.nombre,
+        apellido: responseDataK.apellido,
+        edad: responseDataK.edad,
+        correo: responseDataK.correo,
+        codigo_postal: responseDataK.codigo_postal,
+        colonia: responseDataK.colonia,
+        ciudad: responseDataK.ciudad,
+        estado: responseDataK.estado,
       };
 
       login(userk);
@@ -168,7 +231,11 @@ const Login = () => {
       setFormData(initialFormState);
       setPreferencias([]);
 
-      navigate("/dashboard"); // Redirigir a la página principal después del registro exitoso
+      if (pref) {
+        navigate("/preferencias");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Error completo:", error);
       alert("Error en el registro: " + error.message);
@@ -233,8 +300,6 @@ const Login = () => {
         if (addresses.length === 0) {
           setError("No se encontraron resultados para este código postal");
         }
-
-        console.log("Direcciones obtenidas:", addresses); // Verificar en consola
 
         setAddressData(addresses);
       } catch (error) {
@@ -472,9 +537,9 @@ const Login = () => {
                   <label className="form-label">Cédula política</label>
                   <input
                     name="cedula_politica"
-                    value={formData.cedula_politica}
-                    onChange={handleChange}
-                    type="text"
+                    // value={formData.cedula_politica}
+                    onChange={handleFileChange}
+                    type="file"
                     className="form-input"
                     required
                   />

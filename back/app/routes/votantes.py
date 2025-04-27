@@ -22,7 +22,7 @@ def create_votante():
         votante_creado = db.find_one({'_id': result.inserted_id}) # Buscar el votante creado
         votante_creado['_id'] = str(votante_creado['_id']) # Convertir _id a string para poder enviarlo en JSON
         
-        return jsonify({'message': 'Votante creado', 'votante': votante_creado}), 201
+        return jsonify(votante_creado), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
