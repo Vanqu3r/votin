@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "../style/Preferencias.css"; // Asegúrate de tener este archivo CSS para los estilos
 import apiClient from "../api/client"; // Asegúrate de que esta ruta sea correcta
+import InternalNavbar from "../components/InternalNavbar";
 
 const Preferencias = () => {
   const { user, isLoading } = useAuth();
@@ -20,7 +21,6 @@ const Preferencias = () => {
   }, [user, isLoading, navigate]); */
 
   console.log("Preferencias.js - user:");
-  
 
   useEffect(() => {
     const fetchPreguntas = async () => {
@@ -74,7 +74,7 @@ const Preferencias = () => {
           };
         }),
       };
-      
+
       const usuario_id = user.uid;
 
       // 3. Enviar los datos a la API
@@ -95,60 +95,63 @@ const Preferencias = () => {
   };
 
   return (
-    <div className="encuesta-container">
-      <h1 className="encuesta-title">Encuesta de Opinión</h1>
-      <p className="encuesta-description">
-        Por favor, califique cada afirmación del 1 (Totalmente en desacuerdo) al
-        5 (Totalmente de acuerdo)
-      </p>
+    <>
+      <InternalNavbar />
+      <div className="encuesta-container">
+        <h1 className="encuesta-title">Encuesta de Opinión</h1>
+        <p className="encuesta-description">
+          Por favor, califique cada afirmación del 1 (Totalmente en desacuerdo)
+          al 5 (Totalmente de acuerdo)
+        </p>
 
-      <form onSubmit={handleSubmit}>
-        {categorias.map((categoria) => (
-          <div key={categoria.numero} className="categoria-card">
-            <h2 className="categoria-title">
-              {categoria.numero}. {categoria.nombre}
-            </h2>
+        <form onSubmit={handleSubmit}>
+          {categorias.map((categoria) => (
+            <div key={categoria.numero} className="categoria-card">
+              <h2 className="categoria-title">
+                {categoria.numero}. {categoria.nombre}
+              </h2>
 
-            <div className="preguntas-container">
-              {categoria.preguntas.map((pregunta, indexPregunta) => (
-                <div key={indexPregunta} className="pregunta-item">
-                  <p className="pregunta-text">{pregunta}</p>
+              <div className="preguntas-container">
+                {categoria.preguntas.map((pregunta, indexPregunta) => (
+                  <div key={indexPregunta} className="pregunta-item">
+                    <p className="pregunta-text">{pregunta}</p>
 
-                  <div className="rating-options">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <label key={num} className="rating-label">
-                        <input
-                          type="radio"
-                          name={`pregunta-${categoria.numero}-${indexPregunta}`}
-                          checked={
-                            respuestas[
-                              `${categoria.numero}-${indexPregunta}`
-                            ] === num
-                          }
-                          onChange={() =>
-                            handleRatingChange(
-                              categoria.numero,
-                              indexPregunta,
-                              num
-                            )
-                          }
-                          className="rating-input"
-                        />
-                        <span className="rating-number">{num}</span>
-                      </label>
-                    ))}
+                    <div className="rating-options">
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <label key={num} className="rating-label">
+                          <input
+                            type="radio"
+                            name={`pregunta-${categoria.numero}-${indexPregunta}`}
+                            checked={
+                              respuestas[
+                                `${categoria.numero}-${indexPregunta}`
+                              ] === num
+                            }
+                            onChange={() =>
+                              handleRatingChange(
+                                categoria.numero,
+                                indexPregunta,
+                                num
+                              )
+                            }
+                            className="rating-input"
+                          />
+                          <span className="rating-number">{num}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        <button type="submit" className="submit-button">
-          Enviar Respuestas
-        </button>
-      </form>
-    </div>
+          <button type="submit" className="submit-button">
+            Enviar Respuestas
+          </button>
+        </form>
+      </div>
+    </>
   );
 };
 
