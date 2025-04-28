@@ -35,6 +35,20 @@ const CrearPropuesta = ({ onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    try {
+      const res = await apiClient.get(`politico/${user.uid}`);
+      if (!res.data.validacion) {
+        alert(
+          "El político no está validado. No puede crear propuestas. Espera a que un administrador valide tu cuenta."
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Error al obtener el político:", error);
+      return;
+    }
+
     if (formData.title && formData.description && formData.category) {
       try {
         const propuesta = {

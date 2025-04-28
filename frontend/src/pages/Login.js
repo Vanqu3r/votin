@@ -3,6 +3,7 @@ import "../style/Login.css";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom"; // Importar useNavigate para redireccionar
 import axios from "axios";
+import apiClient from "../api/client";
 // FIREBASE
 import {
   handleLogout,
@@ -12,8 +13,6 @@ import {
   getDownloadURL,
 } from "../api/firebase.config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
-const api_back = process.env.REACT_APP_BACK;
 
 // FUNCION PARA SEPARAR NOMBRE Y APELLIDO
 function obtenerNombreApellido(displayName) {
@@ -67,7 +66,6 @@ const Login = () => {
 
   const [userg, setUserg] = useState(null);
   const navigate = useNavigate(); // Inicializar el hook useNavigate
-  const [preferencias, setPreferencias] = useState([]); // Estado para almacenar las preferencias del usuario
   // Estado para almacenar los datos del formulario
   const [formData, setFormData] = useState({
     user: "Votante",
@@ -144,7 +142,6 @@ const Login = () => {
         candidatura: "",
         cedula_politica: "",
       });
-      setPreferencias([]);
     }
 
     setFormData({
@@ -166,29 +163,10 @@ const Login = () => {
   };
   // -- FUNCION PARA VERIFICAR EL TIPO DE USUARIO (Mostrar opciones para candidato)
 
-  // ENVIO DE DATOS | REGISTRO
+  // -- ENVIO DE DATOS | REGISTRO
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // Asegurar que la URL no tenga doble barra y termine con barra
-      const cleanApiBack = api_back.replace(/([^:]\/)\/+/g, "$1"); // Eliminar dobles barras
-      const endpoint = `${cleanApiBack}${
-        cleanApiBack.endsWith("/") ? "" : "/"
-      }${formData.user === "Votante" ? "votante/" : "politico/"}`;
-
-      if (formData.user === "Candidato") {
-        try {
-          await handleUpload(); // Llamar a la función de carga de archivos
-        } catch (error) {
-          console.error("Error al subir el archivo:", error);
-          return;
-        }
-      }
-
-      let pref = true;
-      if (formData.user === "Candidato") pref = false;
-
       const requestData = {
         nombre: formData.nombre,
         apellido: formData.apellido,
@@ -198,8 +176,10 @@ const Login = () => {
         colonia: formData.colonia,
         ciudad: formData.ciudad,
         estado: formData.estado,
+        photoURL: userg.photoURL,
         ...(formData.user === "Votante"
           ? {
+              preferencias: [],
               propuestas_votadas: [],
             }
           : {
@@ -209,55 +189,56 @@ const Login = () => {
             }),
       };
 
-      // Agregar preferencias solo si existen y es votante
-      if (formData.user === "Votante" && preferencias.length > 0) {
-        requestData.preferencias = preferencias;
+      console.log("Datos a enviar:", requestData);
+
+      let response;
+
+      if (formData.user === "Candidato") {
+        try {
+          await handleUpload(); // Llamar a la función de carga de archivos
+          response = await apiClient.post("politico", requestData);
+          navigate("/dashboard");
+        } catch (error) {
+          console.error("Error al crear politico: ", error);
+          return;
+        }
+      } else if (formData.user === "Votante") {
+        try {
+          response = await apiClient.post("votante", requestData);
+          navigate("/preferencias");
+        } catch (error) {
+          console.error("Error al crear votante: ", error);
+          return;
+        }
       }
 
-      console.log("Datos a enviar:", requestData); // Verificar en consola
+      console.log("Respuesta del servidor:", response); // Verificar en consola
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
+      if (response.status === 201) {
+        const userk = {
+          uid: response.data._id,
+          nombre: response.data.nombre,
+          apellido: response.data.apellido,
+          edad: response.data.edad,
+          correo: response.data.correo,
+          codigo_postal: response.data.codigo_postal,
+          colonia: response.data.colonia,
+          ciudad: response.data.ciudad,
+          estado: response.data.estado,
+          photoURL: response.data.photoURL,
+          tipo: formData.user.toLowerCase(),
+        };
 
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
+        login(userk);
       }
 
-      const responseDataK = await response.json();
-
-      const userk = {
-        uid: responseDataK._id,
-        nombre: responseDataK.nombre,
-        apellido: responseDataK.apellido,
-        edad: responseDataK.edad,
-        correo: responseDataK.correo,
-        codigo_postal: responseDataK.codigo_postal,
-        colonia: responseDataK.colonia,
-        ciudad: responseDataK.ciudad,
-        estado: responseDataK.estado,
-      };
-
-      login(userk);
-
-      // Resetear formulario
-      setFormData(initialFormState);
-      setPreferencias([]);
-
-      if (pref) {
-        navigate("/preferencias");
-      } else {
-        navigate("/dashboard");
-      }
+      // setFormData(initialFormState); // Resetear formulario
     } catch (error) {
       console.error("Error completo:", error);
       alert("Error en el registro: " + error.message);
     }
   };
+  // -- ENVIO DE DATOS | REGISTRO
 
   // --- FUNCION PARA CERRAR SESION
   const handleLogoutClick = async () => {

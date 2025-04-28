@@ -53,7 +53,7 @@ const InternalNavbar = () => {
                 Estadísticas
               </Link>
             </li>
-            {user && user.tipo === "politico" && (
+            {user && user.tipo === "candidato" && (
               <li className="nav-item">
                 <Link className="nav-link" to="/crearpropuesta">
                   Crear propuesta
@@ -98,12 +98,15 @@ const InternalNavbar = () => {
                       Mi Perfil
                     </Link>
                   </li>
-                  <li>
-                    <Link className="dropdown-item" to="/preferencias">
-                      <i className="bi bi-gear me-2"></i>
-                      Preferencias
-                    </Link>
-                  </li>
+                  {user && user.tipo === "votante" && (
+                    <li>
+                      <Link className="dropdown-item" to="/preferencias">
+                        <i className="bi bi-gear me-2"></i>
+                        Preferencias
+                      </Link>
+                    </li>
+                  )}
+
                   <li>
                     <hr className="dropdown-divider" />
                   </li>

@@ -46,7 +46,7 @@ const Navbar = () => {
         response = await apiClient.get(
           `politico/correo/${encodeURIComponent(email)}`
         );
-        tipo = "politico";
+        tipo = "candidato";
       }
 
       if (response.data.error) {
@@ -54,18 +54,6 @@ const Navbar = () => {
           `administrador/correo/${encodeURIComponent(email)}`
         );
         tipo = "administrador";
-        
-        const userk = {
-          uid: response.data._id,
-          photoURL,
-          nombre: response.data.nombre,
-          apellido: response.data.apellido,
-          correo: response.data.correo,
-          tipo,
-        };
-
-        login(userk);
-        navigate("/dashboard");
       }
 
       if (response?.data?.correo) {

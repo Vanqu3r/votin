@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import InternalNavbar from "../components/InternalNavbar";
+import apiClient from "../api/client"; // Asegúrate de que la ruta sea correcta
 
 const Validacion = () => {
   const [candidates, setCandidates] = useState([]);
@@ -14,9 +15,8 @@ const Validacion = () => {
     const fetchCandidates = async () => {
       try {
         // Simulación de llamada a API - reemplaza con tu llamada real
-        const response = await fetch("http://127.0.0.1:5000/api/politico");
-        const data = await response.json();
-        setCandidates(data);
+        const response = await apiClient.get("/politico");
+        setCandidates(response.data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -26,6 +26,46 @@ const Validacion = () => {
 
     fetchCandidates();
   }, []);
+
+  // Función para validar candidato
+  const validarCandidato = async (candidate_id) => {
+    try {
+      const response = await apiClient.put(`/politico/${candidate_id}`, {
+        validacion: true,
+      });
+      if (response.data._id) {
+        alert("Candidato validado correctamente.");
+        setCandidates((prevCandidates) =>
+          prevCandidates.map((candidate) =>
+            candidate._id === candidate_id
+              ? { ...candidate, validacion: true }
+              : candidate
+          )
+        );
+      }
+    } catch (err) {
+      alert("Error al validar candidato: " + err.message);
+    }
+  };
+
+  // Función para eliminar candidato
+  const eliminarCandidato = async (candidate_id) => {
+    if (
+      window.confirm("¿Estás seguro de que deseas eliminar este candidato?")
+    ) {
+      try {
+        const response = await apiClient.delete(`/politico/${candidate_id}`);
+        if (response.data.message) {
+          alert("Candidato eliminado correctamente.");
+          setCandidates((prevCandidates) =>
+            prevCandidates.filter((candidate) => candidate._id !== candidate_id)
+          );
+        }
+      } catch (err) {
+        alert("Error al eliminar candidato: " + err.message);
+      }
+    }
+  };
 
   // Filtrar candidatos basado en búsqueda y filtro
   const filteredCandidates = candidates.filter((candidate) => {
@@ -103,11 +143,11 @@ const Validacion = () => {
                     onChange={(e) => setFilterCandidatura(e.target.value)}
                   >
                     <option value="todos">Todos los cargos</option>
-                    <option value="gobernador">Gobernador</option>
                     <option value="presidente">Presidente</option>
-                    <option value="diputado">Diputado</option>
-                    <option value="senador">Senador</option>
-                    <option value="alcalde">Alcalde</option>
+                    <option value="gobernador">Gobernador</option>
+                    <option value="presidente municipal">
+                      Presidente municipal
+                    </option>
                   </select>
                 </div>
               </div>
@@ -133,10 +173,23 @@ const Validacion = () => {
                         <td>
                           <div className="d-flex align-items-center">
                             <div className="symbol symbol-40px symbol-circle me-3">
-                              <span className="symbol-label bg-light-primary text-primary fs-6 fw-bold">
-                                {candidate.nombre.charAt(0)}
-                                {candidate.apellido.charAt(0)}
-                              </span>
+                              {candidate.photoURL ? (
+                                <img
+                                  src={
+                                    candidate.photoURL ||
+                                    candidate.nombre.charAt(0) +
+                                      candidate.apellido.charAt(0)
+                                  }
+                                  alt="Foto de perfil"
+                                  className="img-fluid rounded-circle"
+                                  style={{ width: "40px", height: "40px" }}
+                                />
+                              ) : (
+                                <span className="symbol-label bg-light-primary text-primary fs-6 fw-bold">
+                                  {candidate.nombre.charAt(0)}
+                                  {candidate.apellido.charAt(0)}
+                                </span>
+                              )}
                             </div>
                             <div>
                               <div className="fw-bold">
@@ -172,6 +225,8 @@ const Validacion = () => {
                                 ? "bg-danger"
                                 : candidate.candidatura === "gobernador"
                                 ? "bg-warning text-dark"
+                                : candidate.candidatura === "presidente municipal"
+                                ? "bg-info text-dark"
                                 : "bg-secondary"
                             }`}
                           >
@@ -201,8 +256,21 @@ const Validacion = () => {
                             <i className="bi bi-file-earmark-pdf-fill me-1"></i>
                             Cédula
                           </button>
-                          <button className="btn btn-sm btn-outline-secondary">
-                            <i className="bi bi-three-dots-vertical"></i>
+
+                          <button
+                            className="btn btn-sm btn-outline-success me-2"
+                            onClick={() => validarCandidato(candidate._id)}
+                          >
+                            <i className="bi bi-check-circle-fill me-1"></i>
+                            Validar
+                          </button>
+
+                          <button
+                            className="btn btn-sm btn-outline-danger me-2"
+                            onClick={() => eliminarCandidato(candidate._id)}
+                          >
+                            <i className="bi bi-trash-fill me-1"></i>
+                            Eliminar
                           </button>
                         </td>
                       </tr>
