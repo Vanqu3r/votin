@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import InternalNavbar from "../components/InternalNavbar";
+import apiClient from "../api/client";
+import { useAuth } from "../context/AuthContext";
 
 const CrearPropuesta = ({ onSubmit }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -30,18 +33,34 @@ const CrearPropuesta = ({ onSubmit }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.title && formData.description && formData.category) {
-      onSubmit(formData);
+      try {
+        const propuesta = {
+          id_politico: user.uid, // Cambia esto por el ID del político autenticado
+          titulo: formData.title,
+          descripcion: formData.description,
+          categoria: formData.category,
+        };
+
+        const response = await apiClient.post("propuesta", propuesta);
+
+        console.log("Respuesta del servidor:", response.data);
+
+        if (response.data?.id) {
+          alert("Propuesta creada con éxito");
+        }
+      } catch (error) {
+        console.error("Error al crear la propuesta:", error);
+        alert("Error al crear la propuesta. Por favor, inténtelo de nuevo.");
+      }
       // Reset form after submission
       setFormData({
         title: "",
         description: "",
         category: "",
       });
-
-      
     } else {
       alert("Por favor complete todos los campos requeridos");
     }

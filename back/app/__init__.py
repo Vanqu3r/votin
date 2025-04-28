@@ -8,19 +8,24 @@ mongo = PyMongo()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    app.url_map.strict_slashes = False
 
     # Inicializar extensiones
     mongo.init_app(app)
     CORS(app)
 
+
     # Registrar blueprints
     from .routes.votantes import votantes_bp
     from .routes.politicos import politicos_bp
     from .routes.propuestas import propuestas_bp
+    from .routes.administradores import administradores_bp
 
     app.register_blueprint(votantes_bp, url_prefix='/api/votante')
     app.register_blueprint(politicos_bp, url_prefix='/api/politico')
     app.register_blueprint(propuestas_bp, url_prefix='/api/propuesta')
+    app.register_blueprint(administradores_bp, url_prefix='/api/administrador')
 
     # Ruta por defecto
     @app.route('/')

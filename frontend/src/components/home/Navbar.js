@@ -49,19 +49,38 @@ const Navbar = () => {
         tipo = "politico";
       }
 
+      if (response.data.error) {
+        response = await apiClient.get(
+          `administrador/correo/${encodeURIComponent(email)}`
+        );
+        tipo = "administrador";
+        
+        const userk = {
+          uid: response.data._id,
+          photoURL,
+          nombre: response.data.nombre,
+          apellido: response.data.apellido,
+          correo: response.data.correo,
+          tipo,
+        };
+
+        login(userk);
+        navigate("/dashboard");
+      }
+
       if (response?.data?.correo) {
         const userk = {
           uid: response.data._id,
           photoURL,
           nombre: response.data.nombre,
           apellido: response.data.apellido,
-          edad: response.data.edad,
           correo: response.data.correo,
+          tipo,
+          edad: response.data.edad,
           codigo_postal: response.data.codigo_postal,
           colonia: response.data.colonia,
           ciudad: response.data.ciudad,
           estado: response.data.estado,
-          tipo,
         };
 
         login(userk);

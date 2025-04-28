@@ -53,16 +53,21 @@ const InternalNavbar = () => {
                 Estadísticas
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/crearpropuesta">
-                Crear propuesta
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/validacion">
-                Validación
-              </Link>
-            </li>
+            {user && user.tipo === "politico" && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/crearpropuesta">
+                  Crear propuesta
+                </Link>
+              </li>
+            )}
+
+            {user && user.tipo === "administrador" && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/validacion">
+                  Validación
+                </Link>
+              </li>
+            )}
           </ul>
 
           {/* Menú de usuario (derecha) */}
