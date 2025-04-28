@@ -16,12 +16,12 @@ def create_propuesta():
         data = request.json
         errores = propuesta_schema.validate(data)
         if errores:
-            return jsonify({'errores': errores}), 400
+            return jsonify({'errores': errores})
 
         # Validar que el político exista
         id_politico = data.get('id_politico')
         if not id_politico or not db_politicos.find_one({'_id': ObjectId(id_politico)}):
-            return jsonify({'error': 'Político no encontrado'}), 404
+            return jsonify({'error': 'Político no encontrado'})
 
         result = db.insert_one(data)
         return jsonify({'message': 'Propuesta creada', 'id': str(result.inserted_id)}), 201
@@ -43,7 +43,7 @@ def get_propuestas():
 def get_propuesta(id):
     propuesta = db.find_one({'_id': ObjectId(id)})
     if not propuesta:
-        return jsonify({'error': 'Propuesta no encontrada'}), 404
+        return jsonify({'error': 'Propuesta no encontrada'})
 
     propuesta['_id'] = str(propuesta['_id'])
     propuesta['id_politico'] = str(propuesta['id_politico']) if 'id_politico' in propuesta else None
@@ -56,7 +56,7 @@ def get_propuestas_por_politico(id_politico):
         # Verificar si el político existe
         existe = mongo.db.v_politicos.find_one({'_id': ObjectId(id_politico)})
         if not existe:
-            return jsonify({'error': 'Político no encontrado'}), 404
+            return jsonify({'error': 'Político no encontrado'})
 
         # Buscar propuestas con ese id_politico
         propuestas = db.find({'id_politico': id_politico})
@@ -81,11 +81,11 @@ def update_propuesta(id):
         data = request.json
         errores = propuesta_schema.validate(data, partial=True)
         if errores:
-            return jsonify({'errores': errores}), 400
+            return jsonify({'errores': errores})
 
         result = db.update_one({'_id': ObjectId(id)}, {'$set': data})
         if result.matched_count == 0:
-            return jsonify({'error': 'Propuesta no encontrada'}), 404
+            return jsonify({'error': 'Propuesta no encontrada'})
 
         updated_propuesta = db.find_one({'_id': ObjectId(id)})
         updated_propuesta['_id'] = str(updated_propuesta['_id'])
@@ -100,7 +100,7 @@ def delete_propuesta(id):
     try:
         result = db.delete_one({'_id': ObjectId(id)})
         if result.deleted_count == 0:
-            return jsonify({'error': 'Propuesta no encontrada'}), 404
+            return jsonify({'error': 'Propuesta no encontrada'})
         return jsonify({'message': 'Propuesta eliminada'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500

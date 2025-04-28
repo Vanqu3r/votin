@@ -33,9 +33,8 @@ function obtenerNombreApellido(displayName) {
 }
 
 const Login = () => {
-  // Firebase files
+  // --- FIREBASE FILES
   const [file, setFile] = useState(null);
-  const [downloadURL, setDownloadURL] = useState("");
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
@@ -59,15 +58,14 @@ const Login = () => {
 
       // 3. Obtener URL (usando la referencia del snapshot)
       const url = await getDownloadURL(snapshot.ref);
-      setDownloadURL(url);
       formData.cedula_politica = url;
     } catch (err) {
       console.error("Error completo:", err);
     }
   };
-  // Fin Firebase files
+  // --- FIREBASE FILES
+
   const [userg, setUserg] = useState(null);
-  const { user, login, isLoading } = useAuth();
   const navigate = useNavigate(); // Inicializar el hook useNavigate
   const [preferencias, setPreferencias] = useState([]); // Estado para almacenar las preferencias del usuario
   // Estado para almacenar los datos del formulario
@@ -85,31 +83,47 @@ const Login = () => {
     cedula_politica: "",
   });
 
-  // VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
+  // Estado inicial fuera del componente
+  const initialFormState = {
+    user: "Votante",
+    nombre: "",
+    apellido: "",
+    edad: 18,
+    correo: "",
+    codigo_postal: "",
+    colonia: "",
+    ciudad: "",
+    estado: "",
+    candidatura: "",
+    cedula_politica: "",
+  };
+
+  // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
+  const { user, login, isLoading } = useAuth();
   useEffect(() => {
     // Solo redirige cuando la carga ha terminado Y no hay usuario
     if (!isLoading && user) {
       navigate("/dashboard"); // Redirigir a la página de inicio si el usuario no está autenticado
     }
   }, [isLoading]);
+  // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
 
-  // useEffect
+  // --- OBTENER USUARIO LOGUEADO DE FIREBASE
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUserg(currentUser);
     });
-
     return () => {
       unsubscribe();
     };
   }, []);
+  // --- OBTENER USUARIO LOGUEADO DE FIREBASE
 
-  // useEffect que se dispara cuando cambia userg
+  // --- SETEAR NOMBRE Y APELLIDO DEL USUARIO LOGUEADO
   useEffect(() => {
     if (userg !== null) {
       const resultado = obtenerNombreApellido(userg.displayName);
-
       setFormData((prevFormData) => ({
         ...prevFormData,
         nombre: resultado.nombres,
@@ -118,8 +132,9 @@ const Login = () => {
       }));
     }
   }, [userg]);
+  // --- SETEAR NOMBRE Y APELLIDO DEL USUARIO LOGUEADO
 
-  // MANEJAR LOS CAMBIOS EN EL FORMULARIO
+  // --- MANEJAR LOS CAMBIOS EN EL FORMULARIO
   const handleChange = (e) => {
     const { name, value } = e.target; // Desestructurar el evento para obtener el nombre y valor del campo
 
@@ -137,8 +152,9 @@ const Login = () => {
       [name]: value, // Actualizamos solo el campo que cambió
     });
   };
+  // --- MANEJAR LOS CAMBIOS EN EL FORMULARIO
 
-  // FUNCION PARA VERIFICAR EL TIPO DE USUARIO (Mostrar opciones para candidato)
+  // -- FUNCION PARA VERIFICAR EL TIPO DE USUARIO (Mostrar opciones para candidato)
   const tipoUsuario = (usuario) => {
     if (usuario === "Votante") {
       return true;
@@ -148,6 +164,7 @@ const Login = () => {
       return true;
     }
   };
+  // -- FUNCION PARA VERIFICAR EL TIPO DE USUARIO (Mostrar opciones para candidato)
 
   // ENVIO DE DATOS | REGISTRO
   const handleSubmit = async (e) => {
@@ -242,28 +259,14 @@ const Login = () => {
     }
   };
 
-  // Función para manejar el cierre de sesión
+  // --- FUNCION PARA CERRAR SESION
   const handleLogoutClick = async () => {
     await handleLogout(); // Llamamos a la función de cierre de sesión de Firebase
     navigate("/"); // Redirigir a la página principal después de cerrar sesión
   };
+  // --- FUNCION PARA CERRAR SESION
 
-  // Estado inicial fuera del componente
-  const initialFormState = {
-    user: "Votante",
-    nombre: "",
-    apellido: "",
-    edad: 18,
-    correo: "",
-    codigo_postal: "",
-    colonia: "",
-    ciudad: "",
-    estado: "",
-    candidatura: "",
-    cedula_politica: "",
-  };
-
-  // PARA CODIGO POSTAL
+  // --- PARA CODIGO POSTAL
   const [postalCode, setPostalCode] = useState("");
   const [addressData, setAddressData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -323,7 +326,7 @@ const Login = () => {
       estado: address.response.estado,
     });
   };
-  // FIN CODIGO POSTAL
+  // --- PARA CODIGO POSTAL
 
   return (
     <form className="registration-container" onSubmit={handleSubmit}>

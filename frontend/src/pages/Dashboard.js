@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import InternalNavbar from "../components/InternalNavbar";
 
 export default function Dashboard() {

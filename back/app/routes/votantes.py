@@ -15,7 +15,7 @@ def create_votante():
         data = request.json
         errores = votante_schema.validate(data)
         if errores:
-            return jsonify({'errores': errores}), 400
+            return jsonify({'errores': errores})
         
         result = db.insert_one(data)
         
@@ -40,7 +40,7 @@ def get_votantes():
 def get_votante(id):
     votante = db.find_one({'_id': ObjectId(id)})
     if not votante:
-        return jsonify({'error': 'Votante no encontrado'}), 404
+        return jsonify({'error': 'Votante no encontrado'})
 
     votante['_id'] = str(votante['_id'])
     return jsonify(votante)
@@ -50,7 +50,7 @@ def get_votante(id):
 def get_votante_by_correo(correo):
     votante = db.find_one({'correo': correo})
     if not votante:
-        return jsonify({'error': 'Votante no encontrado'}), 404
+        return jsonify({'error': 'Votante no encontrado'})
 
     votante['_id'] = str(votante['_id'])
     return jsonify(votante)
@@ -62,11 +62,11 @@ def update_votante(id):
         data = request.json
         errores = votante_schema.validate(data, partial=True)
         if errores:
-            return jsonify({'errores': errores}), 400
+            return jsonify({'errores': errores})
         
         result = db.update_one({'_id': ObjectId(id)}, {'$set': data})
         if result.matched_count == 0:
-            return jsonify({'error': 'Votante no encontrado'}), 404
+            return jsonify({'error': 'Votante no encontrado'})
         
         updated_votante = db.find_one({'_id': ObjectId(id)})
         updated_votante['_id'] = str(updated_votante['_id'])

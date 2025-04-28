@@ -40,7 +40,17 @@ def get_politicos():
 def get_politico(id):
     politico = db.find_one({'_id': ObjectId(id)})
     if not politico:
-        return jsonify({'error': 'Político no encontrado'}), 404
+        return jsonify({'error': 'Político no encontrado'})
+
+    politico['_id'] = str(politico['_id'])
+    return jsonify(politico)
+
+# Obtener un político por CORREO
+@politicos_bp.route('/correo/<correo>', methods=['GET'])
+def get_politico_by_correo(correo):
+    politico = db.find_one({'correo': correo})
+    if not politico:
+        return jsonify({'error': 'Político no encontrado'})
 
     politico['_id'] = str(politico['_id'])
     return jsonify(politico)
@@ -52,11 +62,11 @@ def update_politico(id):
         data = request.json
         errores = politico_schema.validate(data, partial=True)  # Validación parcial para actualización
         if errores:
-            return jsonify({'errores': errores}), 400
+            return jsonify({'errores': errores})
 
         result = db.update_one({'_id': ObjectId(id)}, {'$set': data})
         if result.matched_count == 0:
-            return jsonify({'error': 'Político no encontrado'}), 404
+            return jsonify({'error': 'Político no encontrado'})
 
         updated_politico = db.find_one({'_id': ObjectId(id)})
         updated_politico['_id'] = str(updated_politico['_id'])

@@ -20,8 +20,6 @@ const Preferencias = () => {
     
   }, [user, isLoading, navigate]); */
 
-  console.log("Preferencias.js - user:");
-
   useEffect(() => {
     const fetchPreguntas = async () => {
       try {

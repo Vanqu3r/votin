@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { signInWithGoogle } from "../../api/firebase.config"; // Asegúrate de importar las funciones de autenticación
+import { signInWithGoogle, handleLogout } from "../../api/firebase.config"; // Asegúrate de importar las funciones de autenticación
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import axios from "axios";
-
-const api_back = process.env.REACT_APP_BACK;
+import apiClient from "../../api/client";
 
 const Navbar = () => {
   const { login } = useAuth();
@@ -23,38 +21,38 @@ const Navbar = () => {
         setUser(null); // Si no hay usuario, limpiamos el estado
       }
     });
-
     return () => unsubscribe(); // Limpiamos el listener cuando el componente se desmonte
   }, []);
 
   // Función para manejar el inicio de sesión
   const handleLogin = async () => {
     const loggedInUser = await signInWithGoogle();
+
     if (loggedInUser) {
       setUser(loggedInUser); // Actualizamos el estado con el usuario logueado
-      searchUserByEmail(loggedInUser.email);
+      searchUserByEmail(loggedInUser.email, loggedInUser.photoURL);
     }
   };
 
-  async function searchUserByEmail(email) {
+  async function searchUserByEmail(email, photoURL) {
     try {
-      const cleanApiBack = api_back.replace(/([^:]\/)\/+/g, "$1");
-      const endpoint = `${cleanApiBack}${
-        cleanApiBack.endsWith("/") ? "" : "/"
-      }`;
+      let tipo = "votante";
 
-      const response = await axios.get(
-        `${endpoint}votante/correo/${encodeURIComponent(email)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+      let response = await apiClient.get(
+        `votante/correo/${encodeURIComponent(email)}`
       );
+
+      if (response.data.error) {
+        response = await apiClient.get(
+          `politico/correo/${encodeURIComponent(email)}`
+        );
+        tipo = "politico";
+      }
 
       if (response?.data?.correo) {
         const userk = {
           uid: response.data._id,
+          photoURL,
           nombre: response.data.nombre,
           apellido: response.data.apellido,
           edad: response.data.edad,
@@ -63,23 +61,25 @@ const Navbar = () => {
           colonia: response.data.colonia,
           ciudad: response.data.ciudad,
           estado: response.data.estado,
+          tipo,
         };
 
         login(userk);
-
-        navigate("/dashboard"); // Usuario existe
+        navigate("/dashboard");
       } else {
-        navigate("/login"); // Usuario no tiene correo
+        navigate("/login");
       }
     } catch (error) {
       console.error("Error completo:", error);
-      if (error.response && error.response.status === 404) {
-        navigate("/login");
-      } else {
-        alert("Error: " + error.message);
-      }
     }
   }
+
+  // --- FUNCION PARA CERRAR SESION
+  const handleLogoutClick = async () => {
+    await handleLogout(); // Llamamos a la función de cierre de sesión de Firebase
+    navigate("/"); // Redirigir a la página principal después de cerrar sesión
+  };
+  // --- FUNCION PARA CERRAR SESION
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -123,9 +123,16 @@ const Navbar = () => {
 
             {/* Aquí es donde mostramos el botón de login o el nombre del usuario */}
             <li className="nav-item">
-              {!user && (
+              {!user ? (
                 <button onClick={handleLogin} className="btn btn-primary">
                   Iniciar sesión con Google
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary "
+                  onClick={handleLogoutClick}
+                >
+                  Cerrar sesión
                 </button>
               )}
             </li>
