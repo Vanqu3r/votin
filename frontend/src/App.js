@@ -16,7 +16,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Revisadas */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
