@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -17,9 +18,12 @@ const HeroSection = () => {
             alinean con sus valores e intereses.
           </p>
           <div className="d-flex flex-wrap gap-3 mb-4">
-            <button className="btn btn-primary px-4 py-2 shadow-sm">
+            <Link
+              className="btn btn-primary px-4 py-2 shadow-sm"
+              to="/dashboard"
+            >
               Comenzar ahora
-            </button>
+            </Link>
           </div>
         </div>
 

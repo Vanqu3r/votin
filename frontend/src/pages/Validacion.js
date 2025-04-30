@@ -175,12 +175,12 @@ const Validacion = () => {
                             <div className="symbol symbol-40px symbol-circle me-3">
                               {candidate.photoURL ? (
                                 <img
-                                  src={
-                                    candidate.photoURL ||
+                                  loading="lazy"
+                                  src={candidate.photoURL}
+                                  alt={
                                     candidate.nombre.charAt(0) +
-                                      candidate.apellido.charAt(0)
+                                    candidate.apellido.charAt(0)
                                   }
-                                  alt="Foto de perfil"
                                   className="img-fluid rounded-circle"
                                   style={{ width: "40px", height: "40px" }}
                                 />
@@ -225,7 +225,8 @@ const Validacion = () => {
                                 ? "bg-danger"
                                 : candidate.candidatura === "gobernador"
                                 ? "bg-warning text-dark"
-                                : candidate.candidatura === "presidente municipal"
+                                : candidate.candidatura ===
+                                  "presidente municipal"
                                 ? "bg-info text-dark"
                                 : "bg-secondary"
                             }`}

@@ -86,14 +86,27 @@ const InternalNavbar = () => {
                     {(user.nombre ? user.nombre + " " : "") +
                       (user.apellido || "")}
                   </span>
-                  <i className="bi bi-person-circle"></i>
+                  {user.photoURL ? (
+                    <img
+                      loading="lazy"
+                      src={user.photoURL}
+                      alt={user.nombre.charAt(0) + user.apellido.charAt(0)}
+                      className="img-fluid rounded-circle"
+                      style={{ width: "30px", height: "30px" }}
+                    />
+                  ) : (
+                    <span className="symbol-label bg-light-primary text-primary fs-6 fw-bold">
+                      {user.nombre.charAt(0)}
+                      {user.apellido.charAt(0)}
+                    </span>
+                  )}
                 </Link>
                 <ul
                   className="dropdown-menu dropdown-menu-end"
                   aria-labelledby="userDropdown"
                 >
                   <li>
-                    <Link className="dropdown-item" to="/perfil">
+                    <Link className="dropdown-item" to="/miperfil">
                       <i className="bi bi-person me-2"></i>
                       Mi Perfil
                     </Link>

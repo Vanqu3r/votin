@@ -171,7 +171,7 @@ const CrearPropuesta = ({ onSubmit }) => {
                 }
               >
                 <i className="bi bi-x-circle me-2"></i>
-                Cancelar
+                Limpiar Formulario
               </button>
               <button type="submit" className="btn btn-primary">
                 <i className="bi bi-save me-2"></i>

@@ -86,6 +86,8 @@ const Preferencias = () => {
         }
       );
 
+      alert("Preferencias guardadas correctamente");
+
       navigate("/dashboard");
     } catch (err) {
       console.error("Error detallado:", err.response);

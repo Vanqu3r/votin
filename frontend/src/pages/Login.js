@@ -189,14 +189,15 @@ const Login = () => {
             }),
       };
 
-      console.log("Datos a enviar:", requestData);
-
       let response;
 
       if (formData.user === "Candidato") {
         try {
           await handleUpload(); // Llamar a la función de carga de archivos
+          requestData.cedula_politica = formData.cedula_politica; // Asignar la URL del archivo al objeto de datos
           response = await apiClient.post("politico", requestData);
+
+          // formData.cedula_politica = response.data.cedula_politica;
           navigate("/dashboard");
         } catch (error) {
           console.error("Error al crear politico: ", error);
@@ -211,8 +212,6 @@ const Login = () => {
           return;
         }
       }
-
-      console.log("Respuesta del servidor:", response); // Verificar en consola
 
       if (response.status === 201) {
         const userk = {
