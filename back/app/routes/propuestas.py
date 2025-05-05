@@ -148,7 +148,7 @@ def create_propuesta():
         número,número,número (por ejemplo: 5,4,3)
         """
 
-        # Llamar a la API de Gemini
+        # Llamar a la API de Gemini ❗❗DESCOMENTAR PARA HACER EL LLAMADO A LA API DE GEMINI ❗❗
         """ client = genai.Client(api_key="AIzaSyAns4IRZ6vdnfK8dqWQv_jKoy1_ZT8jUIo")
         response = client.models.generate_content(
             model='gemini-2.0-flash',
@@ -156,6 +156,7 @@ def create_propuesta():
         ) """
 
         # Obtener la respuesta de la API de Gemini (solo los números)
+        # ❗❗DESCOMENTAR PARA OBTENERLO DE LA RESPUESTA ❗❗
         # calificaciones = response.text.strip()
         calificaciones = '1,2,5'
         
