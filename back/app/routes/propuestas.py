@@ -161,7 +161,7 @@ def create_propuesta():
         
 
         # Insertar la propuesta en la base de datos
-        g_data = {
+        propuesta_data = {
             'id_politico': ObjectId(id_politico),
             'titulo': titulo,
             'descripcion': descripcion,
@@ -169,7 +169,14 @@ def create_propuesta():
             'valoracion': list(map(int, calificaciones.split(',')))  # Convertir a lista de enteros
         }
            
-        result = db.insert_one(g_data)
+        result = db.insert_one(propuesta_data)
+        prpuesta_creada = db.find_one({'_id': result.inserted_id}) # Buscar la propuesta creada
+        
+        # Obtener votantes
+        votantes = db_votantes.find()
+        
+        for votante in votantes:
+            generar_voto_si_coincide(prpuesta_creada, votante)
 
         # Devolver la propuesta y las valoraciones
         return jsonify({
@@ -180,6 +187,71 @@ def create_propuesta():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# Mapea categorías a IDs (ajusta según tu sistema)
+CATEGORIA_MAP = {
+    "Economía y Empleo": 1,
+    "Educación": 2,
+    "Salud": 3,
+    "Seguridad y Justicia": 4,
+    "Medio Ambiente": 5,
+    "Infraestructura y Transporte": 6,
+    "Política Social y Derechos Humanos": 7,
+    "Gobernabilidad y Reforma Política": 8,
+    "Cultura, Ciencia y Tecnología": 9,
+    "Relaciones Exteriores": 10
+}
+
+def generar_voto_si_coincide(propuesta, votante):
+    categoria_nombre = propuesta['categoria']
+    categoria_id = CATEGORIA_MAP.get(categoria_nombre)
+
+    if not categoria_id:
+        return False  # Categoría no válida
+
+    # Obtener las preferencias de esa categoría del votante
+    preferencias_categoria = [p for p in votante['preferencias'] if p['categoria_id'] == categoria_id]
+
+    if len(preferencias_categoria) != 3:
+        return False  # Algo está mal, deberían ser 3 preguntas por categoría
+
+    valoracion_propuesta = propuesta['valoracion']  # lista: [v1, v2, v3]
+
+    # Comparamos cada pregunta (índice 0, 1, 2)
+    coincidencias = 0
+    for i in range(3):
+        valor_votante = preferencias_categoria[i]['valoracion']
+        valor_propuesta = valoracion_propuesta[i]
+        if valor_votante == valor_propuesta:
+            coincidencias += 1
+
+    # 🔑 Decide tu criterio aquí:
+    if coincidencias >= 3:
+        print(f"✅ Generando voto para votante {votante['_id']} en propuesta {propuesta['id_politico']}")
+        voto = {
+            'id_votante': votante['_id']
+        }
+        
+         # 🔥 1️⃣ Insertamos el voto en la propuesta
+        db.update_one(
+            {'_id': propuesta['_id']},
+            {'$push': {'votos': voto}}
+        )
+
+        # 🔥 2️⃣ Insertamos la propuesta en 'propuestas_votadas' del votante
+        db_votantes.update_one(
+            {'_id': votante['_id']},
+            {'$push': {'propuestas_votadas': propuesta['_id']}}
+        )
+        
+        # Aquí debes hacer la inserción en la DB:
+        # db.propuestas.update_one({'_id': propuesta['id_politico']}, {'$push': {'votos': voto}})
+        return True  # Voto generado
+
+    else:
+        print(f"❌ No hay suficientes coincidencias para votar (solo {coincidencias}/3)")
+        return False
+
 
 def obtener_preguntas(nombre_categoria):
     for categoria in preguntas['categorias']:
