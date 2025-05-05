@@ -83,7 +83,7 @@ const Validacion = () => {
     return matchesSearch && matchesCandidatura;
   });
 
-  if (loading) {
+  /* if (loading) {
     return (
       <div className="d-flex justify-content-center my-5">
         <div className="spinner-border text-primary" role="status">
@@ -91,7 +91,7 @@ const Validacion = () => {
         </div>
       </div>
     );
-  }
+  } */
 
   if (error) {
     return (
@@ -222,14 +222,14 @@ const Validacion = () => {
                           <span
                             className={`badge ${
                               candidate.candidatura === "presidente"
-                                ? "bg-danger"
+                                ? "bg-primary text-white fw-bold" // Azul principal (máxima importancia)
                                 : candidate.candidatura === "gobernador"
-                                ? "bg-warning text-dark"
+                                ? "bg-purple text-white fw-bold" // Morado (importancia media)
                                 : candidate.candidatura ===
                                   "presidente municipal"
-                                ? "bg-info text-dark"
-                                : "bg-secondary"
-                            }`}
+                                ? "bg-info text-white fw-bold" // Cian claro (texto oscuro)
+                                : "bg-secondary text-white" // Gris (otros casos)
+                            } px-3 py-2 fw-normal`} // Tamaño y peso de texto
                           >
                             {candidate.candidatura}
                           </span>

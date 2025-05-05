@@ -1,23 +1,51 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { 
+  FaShieldAlt,         // Administrador
+  FaUserTie,           // Candidato
+  FaUser,              // Votante
+  FaSignOutAlt,        // Cerrar sesión
+  FaUserCog,           // Preferencias
+  FaUserEdit,          // Perfil
+  FaChartLine,         // Estadísticas
+  FaSearch,            // Buscar
+  FaHome,              // Dashboard
+  FaPlus,              // Crear propuesta
+  FaCheckCircle        // Validación
+} from 'react-icons/fa';
 
 const InternalNavbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Función para manejar el cierre de sesión
   const handleLogoutClick = async () => {
-    await logout(); // Llamamos a la función de cierre de sesión del contexto
-    navigate("/"); // Redirigimos a la página de inicio después de cerrar sesión
+    await logout();
+    navigate("/");
+  };
+
+  // Componente para mostrar el icono según el tipo de usuario
+  const UserTypeIcon = ({ type }) => {
+    const iconClass = "text-lg me-2";
+    
+    switch(type) {
+      case 'administrador':
+        return <FaShieldAlt className={`${iconClass} text-purple-500`} />;
+      case 'candidato':
+        return <FaUserTie className={`${iconClass} text-blue-500`} />;
+      case 'votante':
+        return <FaUser className={`${iconClass} text-green-500`} />;
+      default:
+        return <FaUser className={iconClass} />;
+    }
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary py-1 shadow-sm">
       <div className="container-fluid">
         {/* Logo/Marca */}
-        <Link className="navbar-brand" to="/dashboard">
+        <Link className="navbar-brand fw-bold d-flex align-items-center" to="/dashboard">
+          <FaShieldAlt className="me-2" />
           AutoVote
         </Link>
 
@@ -39,31 +67,35 @@ const InternalNavbar = () => {
           {/* Menú principal (izquierda) */}
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/dashboard">
+              <Link className="nav-link d-flex align-items-center" to="/dashboard">
+                <FaHome className="me-1" />
                 Dashboard
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/busacr">
+              <Link className="nav-link d-flex align-items-center" to="/buscar">
+                <FaSearch className="me-1" />
                 Buscar
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/estadisticas">
+              <Link className="nav-link d-flex align-items-center" to="/estadisticas">
+                <FaChartLine className="me-1" />
                 Estadísticas
               </Link>
             </li>
-            {user && user.tipo === "candidato" && (
+            {user?.tipo === "candidato" && (
               <li className="nav-item">
-                <Link className="nav-link" to="/crearpropuesta">
+                <Link className="nav-link d-flex align-items-center" to="/crearpropuesta">
+                  <FaPlus className="me-1" />
                   Crear propuesta
                 </Link>
               </li>
             )}
-
-            {user && user.tipo === "administrador" && (
+            {user?.tipo === "administrador" && (
               <li className="nav-item">
-                <Link className="nav-link" to="/validacion">
+                <Link className="nav-link d-flex align-items-center" to="/validacion">
+                  <FaCheckCircle className="me-1" />
                   Validación
                 </Link>
               </li>
@@ -82,22 +114,21 @@ const InternalNavbar = () => {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
+                  <UserTypeIcon type={user.tipo} />
                   <span className="me-2">
-                    {(user.nombre ? user.nombre + " " : "") +
-                      (user.apellido || "")}
+                    {[user.nombre, user.apellido].filter(Boolean).join(" ")}
                   </span>
                   {user.photoURL ? (
                     <img
-                      loading="lazy"
                       src={user.photoURL}
-                      alt={user.nombre.charAt(0) + user.apellido.charAt(0)}
+                      alt={`${user.nombre?.charAt(0)}${user.apellido?.charAt(0)}`}
                       className="img-fluid rounded-circle"
-                      style={{ width: "30px", height: "30px" }}
+                      style={{ width: "30px", height: "30px", objectFit: "cover" }}
                     />
                   ) : (
-                    <span className="symbol-label bg-light-primary text-primary fs-6 fw-bold">
-                      {user.nombre.charAt(0)}
-                      {user.apellido.charAt(0)}
+                    <span className="symbol-label bg-light text-white rounded-circle d-flex align-items-center justify-content-center"
+                      style={{ width: "30px", height: "30px" }}>
+                      {user.nombre?.charAt(0)}{user.apellido?.charAt(0)}
                     </span>
                   )}
                 </Link>
@@ -106,29 +137,28 @@ const InternalNavbar = () => {
                   aria-labelledby="userDropdown"
                 >
                   <li>
-                    <Link className="dropdown-item" to="/miperfil">
-                      <i className="bi bi-person me-2"></i>
+                    <Link className="dropdown-item d-flex align-items-center" to="/miperfil">
+                      <FaUserEdit className="me-2" />
                       Mi Perfil
                     </Link>
                   </li>
-                  {user && user.tipo === "votante" && (
+                  {user?.tipo === "votante" && (
                     <li>
-                      <Link className="dropdown-item" to="/preferencias">
-                        <i className="bi bi-gear me-2"></i>
+                      <Link className="dropdown-item d-flex align-items-center" to="/preferencias">
+                        <FaUserCog className="me-2" />
                         Preferencias
                       </Link>
                     </li>
                   )}
-
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
                     <button
-                      className="dropdown-item text-danger"
+                      className="dropdown-item d-flex align-items-center text-danger"
                       onClick={handleLogoutClick}
                     >
-                      <i className="bi bi-box-arrow-right me-2"></i>
+                      <FaSignOutAlt className="me-2" />
                       Cerrar Sesión
                     </button>
                   </li>
@@ -136,7 +166,7 @@ const InternalNavbar = () => {
               </li>
             ) : (
               <li className="nav-item">
-                <Link className="nav-link" to="/">
+                <Link className="nav-link btn btn-outline-light" to="/login">
                   Iniciar Sesión
                 </Link>
               </li>

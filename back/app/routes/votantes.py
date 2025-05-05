@@ -89,90 +89,90 @@ def get_preguntas():
                 "numero": 1,
                 "nombre": "Economía y Empleo",
                 "preguntas": [
-                    "¿Está de acuerdo con la implementación de políticas que incentiven la creación de nuevos empleos en el país?",
-                    "¿Cree que es necesario reducir impuestos para apoyar a las pequeñas y medianas empresas?",
-                    "¿Apoya el aumento del salario mínimo para mejorar la calidad de vida de los trabajadores?"
+                    "¿Apoya políticas para crear más empleo aunque aumente el gasto público?",
+                    "¿Está a favor de incentivos para formalizar el trabajo informal?",
+                    "¿Cree que es clave capacitar a los trabajadores para nuevos empleos?"
                 ]
             },
             {
                 "numero": 2,
                 "nombre": "Educación",
                 "preguntas": [
-                    "¿Considera que se debe incrementar la inversión en educación pública en todos los niveles?",
-                    "¿Está de acuerdo con la creación de programas de becas para estudiantes de bajos recursos?",
-                    "¿Apoya la modernización del currículo educativo para adaptarlo a las demandas actuales del mercado laboral?"
+                    "¿Cree que la educación debe enfocarse más en tecnología y oficios?",
+                    "¿Apoya un sistema que combine educación pública y privada de forma justa?",
+                    "¿Está de acuerdo en mejorar la educación en zonas rurales?"
                 ]
             },
             {
                 "numero": 3,
                 "nombre": "Salud",
                 "preguntas": [
-                    "¿Cree que el gobierno debe garantizar el acceso universal a servicios de salud de calidad?",
-                    "¿Está de acuerdo con aumentar la inversión en infraestructura hospitalaria y equipamiento médico?",
-                    "¿Apoya la implementación de programas de prevención y promoción de la salud en las comunidades?"
+                    "¿Apoya un sistema de salud gratuito y para todos?",
+                    "¿Está a favor de fortalecer la prevención en salud más que la atención hospitalaria?",
+                    "¿Cree que el sector privado debe colaborar más con el público en salud?"
                 ]
             },
             {
                 "numero": 4,
                 "nombre": "Seguridad y Justicia",
                 "preguntas": [
-                    "¿Está a favor del fortalecimiento de las fuerzas de seguridad para combatir el crimen de manera efectiva?",
-                    "¿Cree que se requiere una reforma del sistema judicial para agilizar y mejorar la justicia?",
-                    "¿Apoya la implementación de medidas que aseguren la protección de los derechos humanos en el ámbito de la seguridad?"
+                    "¿Apoya usar más tecnología para combatir el crimen?",
+                    "¿Cree que deberían endurecerse las penas para delitos graves?",
+                    "¿Está a favor de mejorar la reinserción de presos?"
                 ]
             },
             {
                 "numero": 5,
                 "nombre": "Medio Ambiente",
                 "preguntas": [
-                    "¿Está de acuerdo con la promoción de energías renovables para reducir la dependencia de combustibles fósiles?",
-                    "¿Cree que se deben establecer políticas más estrictas para la protección del medio ambiente y los recursos naturales?",
-                    "¿Apoya la implementación de programas de reciclaje y gestión sostenible de residuos en su comunidad?"
+                    "¿Apoya que el país avance hacia energías limpias?",
+                    "¿Está a favor de sancionar más fuerte a las empresas que contaminan?",
+                    "¿Cree que las comunidades deben decidir sobre su medio ambiente?"
                 ]
             },
             {
                 "numero": 6,
                 "nombre": "Infraestructura y Transporte",
                 "preguntas": [
-                    "¿Considera necesaria una mayor inversión en la mejora de la infraestructura vial y de transporte público?",
-                    "¿Está de acuerdo con proyectos que amplíen el acceso a servicios básicos, como agua potable y saneamiento?",
-                    "¿Apoya la modernización de las telecomunicaciones y la conectividad a nivel nacional?"
+                    "¿Apoya modernizar el transporte público para reducir el tráfico?",
+                    "¿Está a favor de invertir más en carreteras y servicios básicos?",
+                    "¿Cree que la conectividad digital es tan importante como la física?"
                 ]
             },
             {
                 "numero": 7,
                 "nombre": "Política Social y Derechos Humanos",
                 "preguntas": [
-                    "¿Está a favor de implementar políticas que promuevan la igualdad de género y la inclusión social?",
-                    "¿Cree que el gobierno debe reforzar los programas de apoyo a personas en situación de vulnerabilidad?",
-                    "¿Apoya el fortalecimiento de las leyes y medidas para proteger y garantizar los derechos humanos?"
+                    "¿Apoya dar ayudas directas a los más pobres?",
+                    "¿Está de acuerdo en fortalecer la protección a grupos vulnerables?",
+                    "¿Cree que se deben crear organismos independientes para vigilar los derechos humanos?"
                 ]
             },
             {
                 "numero": 8,
                 "nombre": "Gobernabilidad y Reforma Política",
                 "preguntas": [
-                    "¿Está de acuerdo con la realización de reformas políticas que impulsen la transparencia y la rendición de cuentas?",
-                    "¿Cree que es fundamental fomentar una mayor participación ciudadana en la toma de decisiones gubernamentales?",
-                    "¿Apoya la descentralización del poder para mejorar la gobernabilidad en las distintas regiones del país?"
+                    "¿Apoya limitar la reelección de autoridades?",
+                    "¿Cree que la ciudadanía debe participar más en las decisiones políticas?",
+                    "¿Está a favor de reformar la justicia para hacerla más independiente?"
                 ]
             },
             {
                 "numero": 9,
                 "nombre": "Cultura, Ciencia y Tecnología",
                 "preguntas": [
-                    "¿Considera importante que el gobierno invierta en el fomento de la cultura y el apoyo a las artes?",
-                    "¿Está a favor de aumentar la inversión en investigación científica y desarrollo tecnológico?",
-                    "¿Cree que se deben crear programas que integren la innovación tecnológica en la educación y la industria?"
+                    "¿Apoya más fondos para la cultura y el arte?",
+                    "¿Está de acuerdo en aumentar la inversión en ciencia y tecnología?",
+                    "¿Cree que la alfabetización digital debería ser prioridad?"
                 ]
             },
             {
                 "numero": 10,
                 "nombre": "Relaciones Exteriores",
                 "preguntas": [
-                    "¿Está de acuerdo con que el gobierno fortalezca las relaciones diplomáticas y comerciales con otros países?",
-                    "¿Cree que es fundamental promover acuerdos internacionales que beneficien al país en términos económicos y de seguridad?",
-                    "¿Apoya la implementación de políticas migratorias que favorezcan la integración y seguridad tanto de los migrantes como de la nación?"
+                    "¿Apoya fortalecer alianzas regionales para el desarrollo económico?",
+                    "¿Cree que deben endurecerse las políticas migratorias?",
+                    "¿Está a favor de que el país firme acuerdos contra el cambio climático?"
                 ]
             }
         ]
