@@ -12,35 +12,51 @@ const Preferencias = () => {
   const [respuestas, setRespuestas] = useState({});
 
   // VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
-  /* useEffect(() => {
-    // Solo redirige cuando la carga ha terminado Y no hay usuario
+  useEffect(() => {
     if (!isLoading && !user) {
       navigate("/");
     }
-    
-  }, [user, isLoading, navigate]); */
+  }, [user, isLoading, navigate]);
 
   useEffect(() => {
-    const fetchPreguntas = async () => {
+    if (!user) return; // No hacer nada si user no está disponible
+
+    const fetchData = async () => {
       try {
-        const response = await apiClient.get("votante/preguntas");
-        setCategorias(response.data.categorias);
+        // Obtener preguntas
+        const preguntasResponse = await apiClient.get("votante/preguntas");
+        setCategorias(preguntasResponse.data.categorias);
 
         // Inicializar respuestas vacías
         const respuestasIniciales = {};
-        response.data.categorias.forEach((categoria) => {
+        preguntasResponse.data.categorias.forEach((categoria) => {
           categoria.preguntas.forEach((_, indexPregunta) => {
             respuestasIniciales[`${categoria.numero}-${indexPregunta}`] = null;
           });
         });
-        setRespuestas(respuestasIniciales);
+
+        // Obtener respuestas del usuario
+        try {
+          const respuestasResponse = await apiClient.get(`votante/${user.uid}`);
+          const respuestasAPI = respuestasResponse.data.preferencias?.reduce(
+            (acc, { categoria_id, pregunta_id, valoracion }) => {
+              acc[`${categoria_id}-${pregunta_id - 1}`] = valoracion;
+              return acc;
+            },
+            { ...respuestasIniciales } // Respuestas iniciales como base
+          );
+          setRespuestas(respuestasAPI || respuestasIniciales);
+        } catch (err) {
+          console.error("Error al obtener respuestas:", err);
+          setRespuestas(respuestasIniciales);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Error al obtener preguntas:", err);
       }
     };
 
-    fetchPreguntas();
-  }, []);
+    fetchData();
+  }, [user]); // Añadir user como dependencia
 
   const handleRatingChange = (categoriaNum, preguntaIndex, valor) => {
     setRespuestas((prev) => ({

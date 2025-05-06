@@ -185,7 +185,7 @@ const Login = () => {
           : {
               candidatura: formData.candidatura,
               cedula_politica: formData.cedula_politica,
-              validacion: false,
+              validacion: "pendiente",
             }),
       };
 

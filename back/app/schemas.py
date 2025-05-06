@@ -37,7 +37,9 @@ class PoliticoSchema(Schema):
         "presidente", "gobernador", "presidente municipal"
     ]))
     cedula_politica = fields.String(required=True)
-    validacion = fields.Boolean(missing=False)
+    validacion = fields.String(required=True, validate=validate.OneOf([
+        "valida", "invalida", "pendiente"
+    ]))
 
 # PROPUESTA: Schema para Votos (usado en propuestas)
 class VotoSchema(Schema):
