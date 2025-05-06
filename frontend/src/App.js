@@ -12,6 +12,8 @@ import Preferencias from "./pages/Preferencias.js";
 import CrearPropuesta from "./pages/CrearPropuesta.js";
 import Validacion from "./pages/Validacion.js";
 import MiPerfil from "./pages/MiPerfil.js";
+// Componentes
+import ProtectedRoute from "./components/ProtectedRoute.js";
 
 function App() {
   return (
@@ -19,11 +21,35 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+
+        {/* Rutas protegidas (requieren autenticación) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/miperfil" element={<MiPerfil />} />
+        </Route>
+
+        {/* Rutas solo para votantes */}
+        <Route element={<ProtectedRoute allowedRoles={["votante"]} />}>
+          <Route path="/preferencias" element={<Preferencias />} />
+        </Route>
+
+        {/* Rutas solo para votantes */}
+        <Route element={<ProtectedRoute allowedRoles={["candidato"]} />}>
+          <Route path="/crearpropuesta" element={<CrearPropuesta />} />
+        </Route>
+
+        {/* Rutas solo para administradores */}
+        <Route element={<ProtectedRoute allowedRoles={["administrador"]} />}>
+          <Route path="/validacion" element={<Validacion />} />
+        </Route>
+
+        {/* <Route path="/crearpropuesta" element={<CrearPropuesta />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/preferencias" element={<Preferencias />} />
-        <Route path="/crearpropuesta" element={<CrearPropuesta />} />
-        <Route path="/validacion" element={<Validacion />} />
         <Route path="/miperfil" element={<MiPerfil />} />
+        <Route path="/preferencias" element={<Preferencias />} />
+        <Route path="/validacion" element={<Validacion />} />
+        <Route path="/crearpropuesta" element={<CrearPropuesta />} /> */}
+
         <Route path="*" element={<Home />} />
       </Routes>
     </Router>

@@ -131,8 +131,40 @@ const Navbar = () => {
             {/* Aquí es donde mostramos el botón de login o el nombre del usuario */}
             <li className="nav-item">
               {!user ? (
-                <button onClick={handleLogin} className="btn btn-primary">
+                  <button
+                  onClick={handleLogin}
+                  className="btn btn-light d-flex align-items-center"
+                  style={{
+                    backgroundColor: "#e0e0e0",
+                    border: "1px solid #ccc",
+                    color: "#000",
+                    fontWeight: "500",
+                    gap: "10px",
+                    padding: "6px 12px"
+                  }}
+                >
+                  {/* Imagen de Google dentro del botón */}
+                  <img
+                    src="https://developers.google.com/identity/images/g-logo.png"
+                    alt="Google"
+                    style={{ width: "20px", height: "20px" }}
+                  />
                   Iniciar sesión con Google
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary "
+                  onClick={handleLogoutClick}
+                >
+                  Cerrar sesión
+                </button>
+              )}
+            </li>
+            {/* Aquí es donde mostramos el botón de login o el nombre del usuario */}
+            <li className="nav-item">
+              {!user ? (
+                <button onClick={handleLogin} className="btn btn-primary" >
+                  Iniciar sesión con correo
                 </button>
               ) : (
                 <button

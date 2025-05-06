@@ -12,7 +12,7 @@ import {
 } from "../api/firebase.config";
 
 const MiPerfil = () => {
-  const { user, login, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const [usuario, setUsuario] = useState({
     _id: "",
     nombre: "",
@@ -56,7 +56,7 @@ const MiPerfil = () => {
         cargarDatos();
       }
     }
-  }, [isLoading]);
+  }, [isLoading, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

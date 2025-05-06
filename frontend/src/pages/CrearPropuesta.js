@@ -20,8 +20,7 @@ const CrearPropuesta = ({ onSubmit }) => {
     "Infraestructura y Transporte",
     "Política Social y Derechos Humanos",
     "Gobernabilidad y Reforma Política",
-    "Cultura",
-    "Ciencia y Tecnología",
+    "Cultura, Ciencia y Tecnología",
     "Relaciones Exteriores",
   ];
 
@@ -83,7 +82,7 @@ const CrearPropuesta = ({ onSubmit }) => {
   return (
     <>
       <InternalNavbar />
-      <div className="card shadow-sm border-0">
+      <div className="card shadow-sm border-0 mt-4 mx-4">
         <div className="card-header bg-primary text-white">
           <h4 className="mb-0">
             <i className="bi bi-file-earmark-plus me-2"></i>
@@ -175,7 +174,7 @@ const CrearPropuesta = ({ onSubmit }) => {
               </button>
               <button type="submit" className="btn btn-primary">
                 <i className="bi bi-save me-2"></i>
-                Guardar Propuesta
+                Crear Propuesta
               </button>
             </div>
           </form>

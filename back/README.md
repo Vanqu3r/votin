@@ -194,4 +194,4 @@ Cada documento representa una **propuesta política**.
 
 ---
 
-
+pip install -q -U google-genai
