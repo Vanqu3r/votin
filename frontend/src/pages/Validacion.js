@@ -31,14 +31,14 @@ const Validacion = () => {
   const validarCandidato = async (candidate_id) => {
     try {
       const response = await apiClient.put(`/politico/${candidate_id}`, {
-        validacion: true,
+        validacion: "valida",
       });
       if (response.data._id) {
         alert("Candidato validado correctamente.");
         setCandidates((prevCandidates) =>
           prevCandidates.map((candidate) =>
             candidate._id === candidate_id
-              ? { ...candidate, validacion: true }
+              ? { ...candidate, validacion: "valida" }
               : candidate
           )
         );
@@ -101,6 +101,29 @@ const Validacion = () => {
       </div>
     );
   }
+
+  // Función para marcar cédula como inválida
+  const invalidarCandidato = async (candidate_id) => {
+    if (window.confirm("¿Estás seguro de marcar esta cédula como inválida?")) {
+      try {
+        const response = await apiClient.put(`/politico/${candidate_id}`, {
+          validacion: "invalida",
+        });
+        if (response.data._id) {
+          alert("Cédula marcada como inválida correctamente.");
+          setCandidates((prevCandidates) =>
+            prevCandidates.map((candidate) =>
+              candidate._id === candidate_id
+                ? { ...candidate, validacion: "invalida" }
+                : candidate
+            )
+          );
+        }
+      } catch (err) {
+        alert("Error al marcar cédula como inválida: " + err.message);
+      }
+    }
+  };
 
   return (
     <>
@@ -220,30 +243,36 @@ const Validacion = () => {
                         </td>
                         <td>
                           <span
-                            className={`badge ${
-                              candidate.candidatura === "presidente"
-                                ? "bg-danger"
-                                : candidate.candidatura === "gobernador"
+                            className={`badge ${candidate.candidatura === "presidente"
+                              ? "bg-danger"
+                              : candidate.candidatura === "gobernador"
                                 ? "bg-warning text-dark"
                                 : candidate.candidatura ===
                                   "presidente municipal"
-                                ? "bg-info text-dark"
-                                : "bg-secondary"
-                            }`}
+                                  ? "bg-info text-dark"
+                                  : "bg-secondary"
+                              }`}
                           >
                             {candidate.candidatura}
                           </span>
                         </td>
                         <td>
-                          {candidate.validacion ? (
+                          {candidate.validacion == 'valida' && (
                             <span className="badge bg-success">
                               <i className="bi bi-check-circle-fill me-1"></i>
                               Validado
                             </span>
-                          ) : (
+                          )}
+                          {candidate.validacion === 'pendiente' && (
                             <span className="badge bg-warning text-dark">
                               <i className="bi bi-exclamation-triangle-fill me-1"></i>
                               Pendiente
+                            </span>
+                          )}
+                          {candidate.validacion === 'invalida' && (
+                            <span className="badge bg-danger">
+                              <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                              No válido
                             </span>
                           )}
                         </td>
@@ -264,6 +293,14 @@ const Validacion = () => {
                           >
                             <i className="bi bi-check-circle-fill me-1"></i>
                             Validar
+                          </button>
+
+                          <button
+                            className="btn btn-sm btn-outline-warning me-2"
+                            onClick={() => invalidarCandidato(candidate._id)}
+                          >
+                            <i className="bi bi-x-circle-fill me-1"></i>
+                            Invalidar
                           </button>
 
                           <button

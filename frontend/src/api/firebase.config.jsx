@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -44,4 +44,4 @@ export const handleLogout = async () => {
   }
 };
 
-export { storage, ref, uploadBytes, getDownloadURL };
+export { storage, ref, uploadBytes, getDownloadURL, deleteObject };
