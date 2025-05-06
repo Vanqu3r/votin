@@ -33,12 +33,29 @@ def create_propuesta():
 # Obtener todas las propuestas
 @propuestas_bp.route('/', methods=['GET'])
 def get_propuestas():
-    propuestas = []
-    for doc in db.find():
-        doc['_id'] = str(doc['_id'])
-        doc['id_politico'] = str(doc['id_politico']) if 'id_politico' in doc else None
-        propuestas.append(doc)
-    return jsonify(propuestas)
+    try:
+        propuestas = []
+        for propuesta in db.find():
+            # Convertir ObjectId a string
+            propuesta['_id'] = str(propuesta['_id'])
+            
+            # Manejar el caso donde id_politico puede ser ObjectId o dict ($oid)
+            id_politico = propuesta.get('id_politico')
+            if isinstance(id_politico, dict):
+                id_politico = id_politico.get('$oid', id_politico)
+            
+            # Obtener datos completos del político
+            politico = db_politicos.find_one({'_id': ObjectId(id_politico)})
+            if politico:
+                politico['_id'] = str(politico['_id'])
+                propuesta['politico'] = politico
+            
+            propuestas.append(propuesta)
+        
+        return jsonify(propuestas)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Obtener una propuesta por ID
 @propuestas_bp.route('/<id>', methods=['GET'])

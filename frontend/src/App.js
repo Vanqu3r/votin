@@ -12,6 +12,7 @@ import Preferencias from "./pages/Preferencias.js";
 import CrearPropuesta from "./pages/CrearPropuesta.js";
 import Validacion from "./pages/Validacion.js";
 import MiPerfil from "./pages/MiPerfil.js";
+import Buscar from "./pages/Buscar.js";
 // Componentes
 import ProtectedRoute from "./components/ProtectedRoute.js";
 
@@ -26,6 +27,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/miperfil" element={<MiPerfil />} />
+          <Route path="/buscar" element={<Buscar />} />
         </Route>
 
         {/* Rutas solo para votantes */}
