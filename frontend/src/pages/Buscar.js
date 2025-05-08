@@ -18,10 +18,13 @@ const PropuestasList = () => {
     "Economía y Empleo",
     "Educación",
     "Salud",
-    "Seguridad",
-    "Infraestructura y Transporte",
+    "Seguridad y Justicia",
     "Medio Ambiente",
-    "Gobernabilidad y Reforma Política"
+    "Infraestructura y Transporte",
+    "Política Social y Derechos Humanos",
+    "Gobernabilidad y Reforma Política",
+    "Cultura, Ciencia y Tecnología",
+    "Relaciones Exteriores",
   ];
 
   useEffect(() => {
@@ -56,7 +59,7 @@ const PropuestasList = () => {
     const matchesSearch =
       propuesta.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       propuesta.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (propuesta.politico && 
+      (propuesta.politico &&
         `${propuesta.politico.nombre} ${propuesta.politico.apellido}`
           .toLowerCase()
           .includes(searchTerm.toLowerCase()));
@@ -144,7 +147,7 @@ const PropuestasList = () => {
                 <thead className="table-light">
                   <tr>
                     <th>Título</th>
-                    <th>Descripción</th>
+                    {/* <th>Descripción</th> */}
                     <th>Categoría</th>
                     <th>Político</th>
                     <th>N Votos</th>
@@ -153,20 +156,24 @@ const PropuestasList = () => {
                 <tbody>
                   {filteredPropuestas.length > 0 ? (
                     filteredPropuestas.map((propuesta) => (
-                      <tr 
-                        key={propuesta._id} 
+                      <tr
+                        key={propuesta._id}
                         onClick={() => handlePropuestaClick(propuesta)}
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: "pointer" }}
                         className="hover-row"
                       >
                         <td>
-                          <div className="fw-bold">{propuesta.titulo}</div>
+                          <div className="fw-bold">
+                            {propuesta.titulo.length > 45
+                              ? propuesta.titulo.slice(0, 45) + "..."
+                              : propuesta.titulo}
+                          </div>
                         </td>
-                        <td>
+                        {/* <td>
                           <div className="text-truncate" style={{maxWidth: "300px"}}>
                             {propuesta.descripcion}
                           </div>
-                        </td>
+                        </td> */}
                         <td>
                           <span className="badge bg-info text-dark">
                             {propuesta.categoria}
@@ -193,7 +200,8 @@ const PropuestasList = () => {
                               </div>
                               <div>
                                 <div className="fw-bold">
-                                  {propuesta.politico.nombre} {propuesta.politico.apellido}
+                                  {propuesta.politico.nombre}{" "}
+                                  {propuesta.politico.apellido}
                                 </div>
                                 <div className="text-muted">
                                   {propuesta.politico.candidatura}
@@ -235,7 +243,8 @@ const PropuestasList = () => {
 
           <div className="card-footer d-flex justify-content-between align-items-center">
             <div className="text-muted">
-              Mostrando {filteredPropuestas.length} de {propuestas.length} propuestas
+              Mostrando {filteredPropuestas.length} de {propuestas.length}{" "}
+              propuestas
             </div>
             <div>
               <button className="btn btn-sm btn-outline-primary me-2">
@@ -251,7 +260,10 @@ const PropuestasList = () => {
 
       {/* Modal de Detalles */}
       {selectedPropuesta && (
-        <div className={`modal fade ${showModal ? 'show' : ''}`} style={{ display: showModal ? 'block' : 'none' }}>
+        <div
+          className={`modal fade ${showModal ? "show" : ""}`}
+          style={{ display: showModal ? "block" : "none" }}
+        >
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header bg-primary text-white">
@@ -259,9 +271,9 @@ const PropuestasList = () => {
                   <i className="bi bi-info-circle-fill me-2"></i>
                   Detalles de la Propuesta
                 </h5>
-                <button 
-                  type="button" 
-                  className="btn-close btn-close-white" 
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
                   onClick={handleCloseModal}
                 ></button>
               </div>
@@ -271,9 +283,11 @@ const PropuestasList = () => {
                     <h4 className="mb-3">{selectedPropuesta.titulo}</h4>
                     <div className="mb-4">
                       <h6>Descripción:</h6>
-                      <p className="text-muted">{selectedPropuesta.descripcion}</p>
+                      <p className="text-muted">
+                        {selectedPropuesta.descripcion}
+                      </p>
                     </div>
-                    
+
                     <div className="mb-3">
                       <span className="badge bg-info text-dark fs-6">
                         {selectedPropuesta.categoria}
@@ -311,7 +325,8 @@ const PropuestasList = () => {
                           )}
                         </div>
                         <h5>
-                          {selectedPropuesta.politico.nombre} {selectedPropuesta.politico.apellido}
+                          {selectedPropuesta.politico.nombre}{" "}
+                          {selectedPropuesta.politico.apellido}
                         </h5>
                         <p className="text-muted">
                           <i className="bi bi-person-badge me-2"></i>
@@ -319,13 +334,16 @@ const PropuestasList = () => {
                         </p>
                         <p>
                           <i className="bi bi-envelope me-2"></i>
-                          <a href={`mailto:${selectedPropuesta.politico.correo}`}>
+                          <a
+                            href={`mailto:${selectedPropuesta.politico.correo}`}
+                          >
                             {selectedPropuesta.politico.correo}
                           </a>
                         </p>
                         <p>
                           <i className="bi bi-geo-alt me-2"></i>
-                          {selectedPropuesta.politico.ciudad}, {selectedPropuesta.politico.estado}
+                          {selectedPropuesta.politico.ciudad},{" "}
+                          {selectedPropuesta.politico.estado}
                         </p>
                       </div>
                     ) : (
@@ -337,9 +355,9 @@ const PropuestasList = () => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
+                <button
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={handleCloseModal}
                 >
                   Cerrar
@@ -347,11 +365,7 @@ const PropuestasList = () => {
               </div>
             </div>
           </div>
-          {showModal && (
-            <div 
-                    onClick={handleCloseModal}
-            ></div>
-        )}
+          {showModal && <div onClick={handleCloseModal}></div>}
         </div>
       )}
     </>

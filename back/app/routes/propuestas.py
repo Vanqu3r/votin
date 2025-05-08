@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
+from datetime import datetime
 from app import mongo
 from app.schemas import PropuestaSchema
 from google import genai
@@ -130,6 +131,7 @@ from google import genai
 def create_propuesta():
     try:
         data = request.json
+        data['fecha_creacion'] = datetime.utcnow()
         errores = propuesta_schema.validate(data)
         if errores:
             return jsonify({'errores': errores})
@@ -166,16 +168,16 @@ def create_propuesta():
         """
 
         # Llamar a la API de Gemini ❗❗DESCOMENTAR PARA HACER EL LLAMADO A LA API DE GEMINI ❗❗
-        """ client = genai.Client(api_key="AIzaSyAns4IRZ6vdnfK8dqWQv_jKoy1_ZT8jUIo")
+        client = genai.Client(api_key="AIzaSyAns4IRZ6vdnfK8dqWQv_jKoy1_ZT8jUIo")
         response = client.models.generate_content(
             model='gemini-2.0-flash',
             contents=prompt,
-        ) """
+        )
 
         # Obtener la respuesta de la API de Gemini (solo los números)
         # ❗❗DESCOMENTAR PARA OBTENERLO DE LA RESPUESTA ❗❗
-        # calificaciones = response.text.strip()
-        calificaciones = '1,2,5'
+        calificaciones = response.text.strip()
+        # calificaciones = '1,2,5'
         
 
         # Insertar la propuesta en la base de datos
@@ -243,31 +245,29 @@ def generar_voto_si_coincide(propuesta, votante):
         if valor_votante == valor_propuesta:
             coincidencias += 1
 
-    # 🔑 Decide tu criterio aquí:
+    # Decide tu criterio aquí:
     if coincidencias >= 3:
-        print(f"✅ Generando voto para votante {votante['_id']} en propuesta {propuesta['id_politico']}")
+        print(f"Generando voto para votante {votante['_id']} en propuesta {propuesta['id_politico']}")
         voto = {
             'id_votante': votante['_id']
         }
         
-         # 🔥 1️⃣ Insertamos el voto en la propuesta
+         # Insertamos el voto en la propuesta
         db.update_one(
             {'_id': propuesta['_id']},
             {'$push': {'votos': voto}}
         )
 
-        # 🔥 2️⃣ Insertamos la propuesta en 'propuestas_votadas' del votante
+        # Insertamos la propuesta en 'propuestas_votadas' del votante
         db_votantes.update_one(
             {'_id': votante['_id']},
             {'$push': {'propuestas_votadas': propuesta['_id']}}
         )
-        
-        # Aquí debes hacer la inserción en la DB:
-        # db.propuestas.update_one({'_id': propuesta['id_politico']}, {'$push': {'votos': voto}})
+    
         return True  # Voto generado
 
     else:
-        print(f"❌ No hay suficientes coincidencias para votar (solo {coincidencias}/3)")
+        print(f"No hay suficientes coincidencias para votar (solo {coincidencias}/3)")
         return False
 
 

@@ -124,6 +124,7 @@ const InternalNavbar = () => {
                       alt={`${user.nombre?.charAt(0)}${user.apellido?.charAt(0)}`}
                       className="img-fluid rounded-circle"
                       style={{ width: "30px", height: "30px", objectFit: "cover" }}
+                      loading="lazy"
                     />
                   ) : (
                     <span className="symbol-label bg-light text-white rounded-circle d-flex align-items-center justify-content-center"
