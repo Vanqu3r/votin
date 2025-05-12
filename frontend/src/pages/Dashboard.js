@@ -14,7 +14,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     apiClient
-      .get("/propuesta/resumen") // Ajusta URL si es diferente
+      .get("/estadisticas/dashboard") // Ajusta URL si es diferente
       .then((response) => {
         const data = response.data;
         setStats({

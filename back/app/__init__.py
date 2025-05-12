@@ -21,11 +21,14 @@ def create_app():
     from .routes.politicos import politicos_bp
     from .routes.propuestas import propuestas_bp
     from .routes.administradores import administradores_bp
+    from .routes.estadisticas import estadisticas_bp
+    
 
     app.register_blueprint(votantes_bp, url_prefix='/api/votante')
     app.register_blueprint(politicos_bp, url_prefix='/api/politico')
     app.register_blueprint(propuestas_bp, url_prefix='/api/propuesta')
     app.register_blueprint(administradores_bp, url_prefix='/api/administrador')
+    app.register_blueprint(estadisticas_bp, url_prefix='/api/estadisticas')
 
     # Ruta por defecto
     @app.route('/')
