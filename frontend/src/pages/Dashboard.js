@@ -1,15 +1,32 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import InternalNavbar from "../components/InternalNavbar";
+import apiClient from "../api/client";
 
 export default function Dashboard() {
   // const navigate = useNavigate();
 
-  // Datos de ejemplo
-  const stats = {
-    voters: 12543,
-    politicians: 87,
-    proposals: 215,
-  };
+  const [stats, setStats] = useState({
+    voters: 0,
+    politicians: 0,
+    proposals: 0,
+  });
+
+  useEffect(() => {
+    apiClient
+      .get("/propuesta/resumen") // Ajusta URL si es diferente
+      .then((response) => {
+        const data = response.data;
+        setStats({
+          voters: data.votantes,
+          politicians: data.politicos,
+          proposals: data.propuestas,
+        });
+      })
+      .catch((error) => {
+        console.error("Error obteniendo el resumen:", error);
+      });
+  }, []);
 
   const proposals = [
     {
@@ -92,7 +109,7 @@ export default function Dashboard() {
               </div>
               <div className="card-footer bg-success text-white">
                 <i className="bi bi-person-badge-fill me-2"></i>
-                De 5 partidos diferentes
+                De partidos diferentes
               </div>
             </div>
           </div>
@@ -109,7 +126,7 @@ export default function Dashboard() {
               </div>
               <div className="card-footer bg-info text-white">
                 <i className="bi bi-file-earmark-text-fill me-2"></i>
-                15 nuevas esta semana
+                Activas en votación
               </div>
             </div>
           </div>

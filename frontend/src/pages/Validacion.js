@@ -6,10 +6,11 @@ import apiClient from "../api/client"; // Asegúrate de que la ruta sea correcta
 
 const Validacion = () => {
   const [candidates, setCandidates] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCandidatura, setFilterCandidatura] = useState("todos");
+  const [sortValidation, setSortValidation] = useState("todos");
 
   useEffect(() => {
     const fetchCandidates = async () => {
@@ -19,8 +20,6 @@ const Validacion = () => {
         setCandidates(response.data);
       } catch (err) {
         setError(err.message);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -67,21 +66,37 @@ const Validacion = () => {
     }
   };
 
-  // Filtrar candidatos basado en búsqueda y filtro
-  const filteredCandidates = candidates.filter((candidate) => {
-    const matchesSearch =
-      `${candidate.nombre} ${candidate.apellido}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      candidate.correo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.ciudad.toLowerCase().includes(searchTerm.toLowerCase());
+  // Orden de prioridad para la validación
+  const validationOrder = {
+    valida: 1,
+    pendiente: 2,
+    invalida: 3,
+  };
 
-    const matchesCandidatura =
-      filterCandidatura === "todos" ||
-      candidate.candidatura.toLowerCase() === filterCandidatura.toLowerCase();
+  // Filtrar y ordenar candidatos
+  const filteredCandidates = candidates
+    .filter((candidate) => {
+      // Búsqueda en múltiples campos (restaurada)
+      const matchesSearch =
+        `${candidate.nombre} ${candidate.apellido} ${candidate.correo} ${candidate.ciudad} ${candidate.colonia} ${candidate.estado} ${candidate.codigo_postal}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesCandidatura;
-  });
+      const matchesCandidatura =
+        filterCandidatura === "todos" ||
+        candidate.candidatura.toLowerCase() === filterCandidatura.toLowerCase();
+
+      const matchesValidation =
+        sortValidation === "todos" || candidate.validacion === sortValidation;
+
+      return matchesSearch && matchesCandidatura && matchesValidation;
+    })
+    .sort((a, b) => {
+      if (sortValidation === "todos") {
+        return validationOrder[a.validacion] - validationOrder[b.validacion];
+      }
+      return 0;
+    });
 
   /* if (loading) {
     return (
@@ -138,9 +153,9 @@ const Validacion = () => {
           </div>
 
           <div className="card-body">
-            {/* Controles de búsqueda y filtro */}
+            {/* Controles de búsqueda y filtro - ACTUALIZADO */}
             <div className="row mb-4">
-              <div className="col-md-6 mb-3 mb-md-0">
+              <div className="col-md-4 mb-3 mb-md-0">
                 <div className="input-group">
                   <span className="input-group-text">
                     <i className="bi bi-search"></i>
@@ -148,14 +163,14 @@ const Validacion = () => {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Buscar por nombre, correo o ciudad..."
+                    placeholder="Buscar"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-md-4 mb-3 mb-md-0">
                 <div className="input-group">
                   <span className="input-group-text">
                     <i className="bi bi-funnel-fill"></i>
@@ -171,6 +186,24 @@ const Validacion = () => {
                     <option value="presidente municipal">
                       Presidente municipal
                     </option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="col-md-4">
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="bi bi-filter-circle"></i>
+                  </span>
+                  <select
+                    className="form-select"
+                    value={sortValidation}
+                    onChange={(e) => setSortValidation(e.target.value)}
+                  >
+                    <option value="todos">Todos los estados</option>
+                    <option value="valida">Validados</option>
+                    <option value="pendiente">Pendientes</option>
+                    <option value="invalida">No válido</option>
                   </select>
                 </div>
               </div>
@@ -245,32 +278,32 @@ const Validacion = () => {
                           <span
                             className={`badge ${
                               candidate.candidatura === "presidente"
-                                ? "bg-primary text-white fw-bold" // Azul principal (máxima importancia)
+                                ? "bg-primary text-white fw-bold" //
                                 : candidate.candidatura === "gobernador"
-                                ? "bg-purple text-white fw-bold" // Morado (importancia media)
+                                ? "bg-light fw-bold"
                                 : candidate.candidatura ===
                                   "presidente municipal"
-                                ? "bg-info text-white fw-bold" // Cian claro (texto oscuro)
-                                : "bg-secondary text-white" // Gris (otros casos)
-                            } px-3 py-2 fw-normal`} // Tamaño y peso de texto
+                                ? "bg-info text-dark fw-bold"
+                                : "bg-secondary text-white"
+                            } px-3 py-2`}
                           >
                             {candidate.candidatura}
                           </span>
                         </td>
                         <td>
-                          {candidate.validacion == 'valida' && (
+                          {candidate.validacion === "valida" && (
                             <span className="badge bg-success">
                               <i className="bi bi-check-circle-fill me-1"></i>
                               Validado
                             </span>
                           )}
-                          {candidate.validacion === 'pendiente' && (
+                          {candidate.validacion === "pendiente" && (
                             <span className="badge bg-warning text-dark">
                               <i className="bi bi-exclamation-triangle-fill me-1"></i>
                               Pendiente
                             </span>
                           )}
-                          {candidate.validacion === 'invalida' && (
+                          {candidate.validacion === "invalida" && (
                             <span className="badge bg-danger">
                               <i className="bi bi-exclamation-triangle-fill me-1"></i>
                               No válido
@@ -278,39 +311,38 @@ const Validacion = () => {
                           )}
                         </td>
                         <td>
-                          <button
-                            className="btn btn-sm btn-outline-primary me-2"
-                            onClick={() =>
-                              window.open(candidate.cedula_politica, "_blank")
-                            }
-                          >
-                            <i className="bi bi-file-earmark-pdf-fill me-1"></i>
-                            Cédula
-                          </button>
-
-                          <button
-                            className="btn btn-sm btn-outline-success me-2"
-                            onClick={() => validarCandidato(candidate._id)}
-                          >
-                            <i className="bi bi-check-circle-fill me-1"></i>
-                            Validar
-                          </button>
-
-                          <button
-                            className="btn btn-sm btn-outline-warning me-2"
-                            onClick={() => invalidarCandidato(candidate._id)}
-                          >
-                            <i className="bi bi-x-circle-fill me-1"></i>
-                            Invalidar
-                          </button>
-
-                          <button
-                            className="btn btn-sm btn-outline-danger me-2"
-                            onClick={() => eliminarCandidato(candidate._id)}
-                          >
-                            <i className="bi bi-trash-fill me-1"></i>
-                            Eliminar
-                          </button>
+                          <div className="d-flex gap-1">
+                            <button
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() =>
+                                window.open(candidate.cedula_politica, "_blank")
+                              }
+                              title="Ver cédula política"
+                            >
+                              <i className="bi bi-file-earmark-pdf-fill"></i>
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-success"
+                              onClick={() => validarCandidato(candidate._id)}
+                              title="Validar candidato"
+                            >
+                              <i className="bi bi-check-circle-fill"></i>
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-warning"
+                              onClick={() => invalidarCandidato(candidate._id)}
+                              title="Invalidar candidato"
+                            >
+                              <i className="bi bi-x-circle-fill"></i>
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => eliminarCandidato(candidate._id)}
+                              title="Eliminar candidato"
+                            >
+                              <i className="bi bi-trash-fill"></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))

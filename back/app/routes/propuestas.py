@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 from app import mongo
 from app.schemas import PropuestaSchema
 from google import genai
@@ -131,8 +131,8 @@ from google import genai
 def create_propuesta():
     try:
         data = request.json
-        data['fecha_creacion'] = datetime.utcnow()
         errores = propuesta_schema.validate(data)
+        
         if errores:
             return jsonify({'errores': errores})
 
@@ -186,7 +186,8 @@ def create_propuesta():
             'titulo': titulo,
             'descripcion': descripcion,
             'categoria': categoria,
-            'valoracion': list(map(int, calificaciones.split(',')))  # Convertir a lista de enteros
+            'valoracion': list(map(int, calificaciones.split(','))),  # Convertir a lista de enteros
+            'fecha_creacion': datetime.now(timezone.utc),
         }
            
         result = db.insert_one(propuesta_data)
@@ -375,4 +376,20 @@ preguntas = {
     ]
 }
 
+# Para dashboard
+@propuestas_bp.route('/resumen', methods=['GET'])
+def resumen_conteos():
+    try:
+        total_votantes = db_votantes.count_documents({})
+        total_politicos = db_politicos.count_documents({})
+        total_propuestas = db.count_documents({})
+
+        return jsonify({
+            'votantes': total_votantes,
+            'politicos': total_politicos,
+            'propuestas': total_propuestas
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 

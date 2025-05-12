@@ -12,6 +12,7 @@ const PropuestasList = () => {
   const [filterCategoria, setFilterCategoria] = useState("todos");
   const [selectedPropuesta, setSelectedPropuesta] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [sortOption, setSortOption] = useState("votos_desc");
 
   // Categorías válidas para el filtro
   const CATEGORIAS = [
@@ -71,6 +72,29 @@ const PropuestasList = () => {
     return matchesSearch && matchesCategoria;
   });
 
+  const sortedPropuestas = filteredPropuestas.sort((a, b) => {
+    const votosA = a.votos?.length || 0;
+    const votosB = b.votos?.length || 0;
+
+    const fechaA =
+      new Date(a.fecha_creacion?.$date || a.fecha_creacion || 0).getTime() || 0;
+    const fechaB =
+      new Date(b.fecha_creacion?.$date || b.fecha_creacion || 0).getTime() || 0;
+
+    switch (sortOption) {
+      case "votos_desc":
+        return votosB - votosA;
+      case "votos_asc":
+        return votosA - votosB;
+      case "fecha_desc":
+        return fechaB - fechaA;
+      case "fecha_asc":
+        return fechaA - fechaB;
+      default:
+        return 0;
+    }
+  });
+
   /* if (loading) {
     return (
       <div className="d-flex justify-content-center my-5">
@@ -105,7 +129,7 @@ const PropuestasList = () => {
           <div className="card-body">
             {/* Controles de búsqueda y filtro */}
             <div className="row mb-4">
-              <div className="col-md-6 mb-3 mb-md-0">
+              <div className="col-md-4 mb-3 mb-md-0">
                 <div className="input-group">
                   <span className="input-group-text">
                     <i className="bi bi-search"></i>
@@ -120,7 +144,7 @@ const PropuestasList = () => {
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-md-4 mb-3 mb-md-0">
                 <div className="input-group">
                   <span className="input-group-text">
                     <i className="bi bi-funnel-fill"></i>
@@ -136,6 +160,24 @@ const PropuestasList = () => {
                         {categoria}
                       </option>
                     ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="col-md-4 mt-3 mt-md-0">
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="bi bi-sort-down"></i>
+                  </span>
+                  <select
+                    className="form-select"
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
+                  >
+                    <option value="votos_desc">Más votadas</option>
+                    <option value="votos_asc">Menos votadas</option>
+                    <option value="fecha_desc">Más recientes</option>
+                    <option value="fecha_asc">Más antiguas</option>
                   </select>
                 </div>
               </div>
@@ -186,7 +228,6 @@ const PropuestasList = () => {
                                 {propuesta.politico.photoURL ? (
                                   <img
                                     src={propuesta.politico.photoURL}
-                                    alt={`${propuesta.politico.nombre} ${propuesta.politico.apellido}`}
                                     className="img-fluid rounded-circle"
                                     style={{ width: "40px", height: "40px" }}
                                     loading="lazy"
@@ -281,19 +322,33 @@ const PropuestasList = () => {
                 <div className="row">
                   <div className="col-md-8">
                     <h4 className="mb-3">{selectedPropuesta.titulo}</h4>
+                    {selectedPropuesta.fecha_creacion && (
+                      <div className="mb-3">
+                        <i className="bi bi-calendar me-2"></i>
+                        <span className="text-muted">
+                          Creada el{" "}
+                          {new Date(
+                            selectedPropuesta.fecha_creacion.$date ||
+                              selectedPropuesta.fecha_creacion
+                          ).toLocaleDateString("es-MX", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    )}
                     <div className="mb-4">
                       <h6>Descripción:</h6>
                       <p className="text-muted">
                         {selectedPropuesta.descripcion}
                       </p>
                     </div>
-
                     <div className="mb-3">
                       <span className="badge bg-info text-dark fs-6">
                         {selectedPropuesta.categoria}
                       </span>
                     </div>
-
                     <div className="mb-3">
                       <h6>Votos:</h6>
                       <span className="badge bg-success text-white fs-6">
