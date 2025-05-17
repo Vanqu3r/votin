@@ -48,16 +48,20 @@ const Estadisticas = () => {
                 // Si es candidato, obtenemos sus datos específicos
                 if (user?.tipo === "candidato") {
                     requests.push(apiClient.get(`/politico/${user.uid}`));
+                    requests.push(apiClient.get(`/propuesta/politico/${user.uid}`));
                 }
 
-                const [votantesRes, candidatosRes, preguntas, miCandidatoRes] = await Promise.all(requests);
+                // Y actualizar el setRawData correctamente:
+                const [votantesRes, candidatosRes, preguntas, miCandidatoRes, misPropuestasRes] = await Promise.all(requests);
 
                 setRawData({
                     votantes: votantesRes.data,
                     candidatos: candidatosRes.data,
                     categorias: preguntas.data.categorias,
-                    miCandidato: miCandidatoRes?.data || null
+                    miCandidato: miCandidatoRes?.data || null,
+                    misPropuestas: misPropuestasRes?.data || []
                 });
+
             } catch (err) {
                 console.error("Error al obtener datos: ", err);
                 setError("Error al cargar los datos. Por favor intente más tarde.");
@@ -120,67 +124,95 @@ const Estadisticas = () => {
 
     // Process data for candidate view
     const candidateData = useMemo(() => {
-        if (!rawData.miCandidato) return null;
+        if (!rawData.miCandidato || !rawData.votantes || !rawData.categorias) {
+            return null;
+        }
 
-        // 1. Número de votos en propuestas por categoría
+        // Inicializar estructuras de datos
         const votosPorCategoria = {};
-        const miCandidatoId = rawData.miCandidato.id;
+        const misVotantesIds = new Set();
+        const edadesVotantes = {};
+        const ubicacionVotantes = {};
+        const propuestasConVotos = new Set();
 
-        rawData.votantes.forEach(votante => {
-            if (Array.isArray(votante.preferencias)) {
-                votante.preferencias.forEach(pref => {
-                    if (pref.politico_id === miCandidatoId) {
-                        const catId = pref.categoria_id;
-                        const nombreCategoria = rawData.categorias.find(c => c.numero === catId)?.nombre || `Categoría ${catId}`;
-                        votosPorCategoria[catId] = {
-                            categoria: nombreCategoria,
-                            votos: (votosPorCategoria[catId]?.votos || 0) + pref.valoracion
-                        };
+        // Inicializar categorías con todas las categorías disponibles
+        rawData.categorias.forEach(cat => {
+            votosPorCategoria[cat.nombre] = {
+                categoria: cat.nombre,
+                votos: 0
+            };
+        });
+
+        // Procesar votos de cada propuesta del candidato
+        rawData.misPropuestas?.forEach(propuesta => {
+            if (propuesta.id_politico === rawData.miCandidato._id) {
+                // Registrar la propuesta si tiene votos
+                if (propuesta.votos?.length > 0) {
+                    propuestasConVotos.add(propuesta._id);
+                }
+
+                // Contar votos por categoría
+                propuesta.votos?.forEach(voto => {
+                    // Sumar a la categoría correspondiente
+                    if (votosPorCategoria[propuesta.categoria]) {
+                        votosPorCategoria[propuesta.categoria].votos += 1;
                     }
+
+                    // Registrar votantes únicos
+                    misVotantesIds.add(voto.id_votante.$oid);
                 });
             }
         });
 
-        // 2. Porcentaje de votantes del total de plataforma
-        const totalVotantes = rawData.votantes.length;
-        const misVotantesIds = new Set();
+        // Procesar datos demográficos de los votantes
+        rawData.votantes.forEach(votante => {
+            if (misVotantesIds.has(votante._id)) {
+                // Procesar edad
+                const edad = votante.edad;
+                edadesVotantes[edad] = (edadesVotantes[edad] || 0) + 1;
 
-        rawData.votantes.forEach(v => {
-            if (Array.isArray(v.preferencias)) {
-                const haVotado = v.preferencias.some(p => p.politico_id === miCandidatoId);
-                if (haVotado) misVotantesIds.add(v.id);
+                // Procesar ubicación
+                const ubicacion = `${votante.ciudad || 'Sin ciudad'}, ${votante.estado || 'Sin estado'}`;
+                ubicacionVotantes[ubicacion] = (ubicacionVotantes[ubicacion] || 0) + 1;
             }
         });
 
+        // Formatear datos para gráficos
+        const votosPorCategoriaData = Object.values(votosPorCategoria)
+            .filter(item => item.votos > 0)
+            .sort((a, b) => b.votos - a.votos);
+
+        const edadesVotantesData = Object.entries(edadesVotantes)
+            .map(([edad, count]) => ({
+                name: `${edad} años`,
+                value: count,
+                edad: parseInt(edad)
+            }))
+            .sort((a, b) => a.edad - b.edad);
+
+        const ubicacionVotantesData = Object.entries(ubicacionVotantes)
+            .map(([ubicacion, count]) => ({
+                name: ubicacion,
+                value: count
+            }))
+            .sort((a, b) => b.value - a.value);
+
+        const totalVotantes = rawData.votantes.length;
+        const votantesUnicos = misVotantesIds.size;
         const porcentajeVotantes = totalVotantes > 0
-            ? (misVotantesIds.size / totalVotantes * 100).toFixed(2)
+            ? Math.min(100, (votantesUnicos / totalVotantes) * 100).toFixed(2) // Asegurar no más del 100%
             : 0;
 
-        // 3. Edad de los votantes que han votado sus propuestas
-        const edadesVotantes = {};
-        rawData.votantes.forEach(v => {
-            if (misVotantesIds.has(v.id)) {
-                const edad = v.edad;
-                edadesVotantes[edad] = (edadesVotantes[edad] || 0) + 1;
-            }
-        });
-
-        // 4. Ubicación de los votantes
-        const ubicacionVotantes = {};
-        rawData.votantes.forEach(v => {
-            if (misVotantesIds.has(v.id)) {
-                const ciudad = v.ciudad || "Sin ciudad";
-                ubicacionVotantes[ciudad] = (ubicacionVotantes[ciudad] || 0) + 1;
-            }
-        });
-
         return {
-            votosPorCategoria: Object.values(votosPorCategoria),
+            votosPorCategoria: votosPorCategoriaData,
             porcentajeVotantes,
-            edadesVotantes: Object.entries(edadesVotantes).map(([name, value]) => ({ name, value })),
-            ubicacionVotantes: Object.entries(ubicacionVotantes).map(([name, value]) => ({ name, value })),
+            edadesVotantes: edadesVotantesData,
+            ubicacionVotantes: ubicacionVotantesData,
             totalVotantes,
-            misVotantes: misVotantesIds.size
+            misVotantes: votantesUnicos,
+            misPropuestas: rawData.misPropuestas?.length || 0,
+            propuestasConVotos: propuestasConVotos.size,
+            tieneDatos: votantesUnicos > 0
         };
     }, [rawData]);
 
@@ -288,13 +320,18 @@ const Estadisticas = () => {
                                                     cy="50%"
                                                     outerRadius={150}
                                                     innerRadius={80}
-                                                    label
+                                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                                 >
                                                     {adminData.ubicacionData.map((entry, index) => (
                                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
-                                                <Tooltip />
+                                                <Tooltip
+                                                    formatter={(value, name, props) => [
+                                                        value + " usuario(s)",
+                                                        name
+                                                    ]} 
+                                                />
                                                 <Legend />
                                             </PieChart>
                                         </ResponsiveContainer>
@@ -315,11 +352,17 @@ const Estadisticas = () => {
                                     </h3>
                                 </div>
                                 <div className="card-body">
-                                    <div style={{ height: CHART_HEIGHT }}>
+                                    <div style={{ height: 500 }}>
                                         <ResponsiveContainer>
                                             <BarChart data={adminData.categoriaData}>
                                                 <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="categoria" />
+                                                <XAxis
+                                                        dataKey="categoria"
+                                                        angle={-45}
+                                                        textAnchor="end"
+                                                        height={170}
+                                                        tick={{ fontSize: 12 }}
+                                                    />
                                                 <YAxis />
                                                 <Tooltip />
                                                 <Legend />
@@ -346,10 +389,10 @@ const Estadisticas = () => {
             <>
                 <InternalNavbar />
                 <div className="container-fluid p-4">
-                    
+
                     {/* Resumen de votos */}
                     <div className="row mb-4">
-                        <div >
+                        <div>
                             <div className="card shadow-sm h-100">
                                 <div className="card-header bg-success text-white">
                                     <h3 className="mb-0">
@@ -358,21 +401,34 @@ const Estadisticas = () => {
                                     </h3>
                                 </div>
                                 <div className="card-body">
-                                    <h4>Total de votantes en la plataforma: {candidateData.totalVotantes}</h4>
-                                    <h4>Mis votantes: {candidateData.misVotantes}</h4>
-                                    <div className="progress mt-3" style={{ height: "30px" }}>
-                                        <div
-                                            className="progress-bar bg-info"
-                                            role="progressbar"
-                                            style={{ width: `${candidateData.porcentajeVotantes}%` }}
-                                            aria-valuenow={candidateData.porcentajeVotantes}
-                                            aria-valuemin="0"
-                                            aria-valuemax="100"
-                                        >
-                                            {candidateData.porcentajeVotantes}%
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <h5>Total en plataforma:</h5>
+                                                <h3 className="text-primary">{candidateData.totalVotantes}</h3>
+                                            </div>
+                                            <div className="mb-3">
+                                                <h5>Mis votantes:</h5>
+                                                <h3 className="text-success">{candidateData.misVotantes}</h3>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <h5>Mis propuestas:</h5>
+                                                <h3 className="text-info">{candidateData.misPropuestas}</h3>
+                                            </div>
+                                            <div className="progress mt-3" style={{ height: "30px" }}>
+                                                <div
+                                                    className="progress-bar bg-info"
+                                                    role="progressbar"
+                                                    style={{ width: `${candidateData.porcentajeVotantes}%` }}
+                                                >
+                                                    {candidateData.porcentajeVotantes}%
+                                                </div>
+                                            </div>
+                                            <p className="mt-2 text-muted">Porcentaje de apoyo</p>
                                         </div>
                                     </div>
-                                    <p className="mt-2">Porcentaje de votantes que te han apoyado</p>
                                 </div>
                             </div>
                         </div>
@@ -387,24 +443,69 @@ const Estadisticas = () => {
                                         <i className="bi bi-bar-chart-fill me-2"></i>
                                         Votos por categoría
                                     </h3>
+                                    {candidateData?.votosPorCategoria?.length > 0 && (
+                                        <small className="text-white-50">
+                                            Total votos: {candidateData.votosPorCategoria.reduce((sum, item) => sum + item.votos, 0)}
+                                        </small>
+                                    )}
                                 </div>
                                 <div className="card-body">
-                                    <div style={{ height: CHART_HEIGHT }}>
-                                        <ResponsiveContainer>
-                                            <BarChart data={candidateData.votosPorCategoria}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="categoria" />
-                                                <YAxis />
-                                                <Tooltip />
-                                                <Legend />
-                                                <Bar dataKey="votos" name="Votos recibidos">
-                                                    {candidateData.votosPorCategoria.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                    ))}
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
+                                    {candidateData?.votosPorCategoria?.length > 0 ? (
+                                        <div style={{ height: CHART_HEIGHT }}>
+                                            <ResponsiveContainer>
+                                                <BarChart
+                                                    data={candidateData.votosPorCategoria}
+                                                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                                                >
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis
+                                                        dataKey="categoria"
+                                                        angle={-45}
+                                                        textAnchor="end"
+                                                        height={70}
+                                                        tick={{ fontSize: 12 }}
+                                                    />
+                                                    <YAxis
+                                                        label={{
+                                                            value: 'Número de votos',
+                                                            angle: -90,
+                                                            position: 'insideLeft',
+                                                            fontSize: 12
+                                                        }}
+                                                    />
+                                                    <Tooltip
+                                                        formatter={(value, name, props) => [
+                                                            value,
+                                                            props.payload.categoria
+                                                        ]}
+                                                        labelFormatter={() => 'Total votos'}
+                                                    />
+                                                    <Legend />
+                                                    <Bar
+                                                        dataKey="votos"
+                                                        name="Votos por categoría"
+                                                        fill={COLORS[0]}
+                                                        animationDuration={1500}
+                                                    >
+                                                        {candidateData.votosPorCategoria.map((entry, index) => (
+                                                            <Cell
+                                                                key={`cell-${index}`}
+                                                                fill={COLORS[index % COLORS.length]}
+                                                            />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4">
+                                            {rawData.misPropuestas?.length > 0 ? (
+                                                <p>No hay votos registrados para tus propuestas</p>
+                                            ) : (
+                                                <p>No tienes propuestas registradas</p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -419,35 +520,44 @@ const Estadisticas = () => {
                                     </h3>
                                 </div>
                                 <div className="card-body">
-                                    <div style={{ height: CHART_HEIGHT }}>
-                                        <ResponsiveContainer>
-                                            <PieChart>
-                                                <Pie
-                                                    data={candidateData.edadesVotantes}
-                                                    dataKey="value"
-                                                    nameKey="name"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    outerRadius={150}
-                                                    innerRadius={80}
-                                                    label
-                                                >
-                                                    {candidateData.edadesVotantes.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip />
-                                                <Legend />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    </div>
+                                    {candidateData.tieneDatos ? (
+                                        <div style={{ height: CHART_HEIGHT }}>
+                                            <ResponsiveContainer>
+                                                <PieChart>
+                                                    <Pie
+                                                        data={candidateData.edadesVotantes}
+                                                        dataKey="value"
+                                                        nameKey="name"
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        outerRadius={150}
+                                                        innerRadius={80}
+                                                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                    >
+                                                        {candidateData.edadesVotantes.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                        ))}
+                                                    </Pie>
+                                                    <Tooltip
+                                                        formatter={(value, name, props) => [
+                                                            value + " votante(s)",
+                                                            props.payload.name
+                                                        ]}
+                                                    />
+                                                    <Legend />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4">
+                                            <p>No hay datos de edades disponibles</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Ubicación de votantes */}
-                    <div className="row">
+                        {/* Ubicación de votantes */}
                         <div className="col-12">
                             <div className="card shadow-sm">
                                 <div className="card-header bg-primary text-white">
@@ -457,28 +567,39 @@ const Estadisticas = () => {
                                     </h3>
                                 </div>
                                 <div className="card-body">
-                                    <div style={{ height: CHART_HEIGHT }}>
-                                        <ResponsiveContainer>
-                                            <PieChart>
-                                                <Pie
-                                                    data={candidateData.ubicacionVotantes}
-                                                    dataKey="value"
-                                                    nameKey="name"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    outerRadius={150}
-                                                    innerRadius={80}
-                                                    label
-                                                >
-                                                    {candidateData.ubicacionVotantes.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip />
-                                                <Legend />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    </div>
+                                    {candidateData.tieneDatos ? (
+                                        <div style={{ height: CHART_HEIGHT }}>
+                                            <ResponsiveContainer>
+                                                <PieChart>
+                                                    <Pie
+                                                        data={candidateData.ubicacionVotantes}
+                                                        dataKey="value"
+                                                        nameKey="name"
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        outerRadius={150}
+                                                        innerRadius={80}
+                                                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                    >
+                                                        {candidateData.ubicacionVotantes.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                        ))}
+                                                    </Pie>
+                                                    <Tooltip
+                                                        formatter={(value, name, props) => [
+                                                            value,
+                                                            props.payload.name
+                                                        ]}
+                                                    />
+                                                    <Legend />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4">
+                                            <p>No hay datos de ubicación disponibles</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

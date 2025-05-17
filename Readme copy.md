@@ -61,6 +61,7 @@ venv\Scripts\activate
 
 ```bash
 pip install -r requirements.txt
+npm install recharts
 ```
 
 Si no tienes `requirements.txt`, instala directamente:
