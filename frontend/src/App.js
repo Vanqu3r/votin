@@ -15,6 +15,7 @@ import MiPerfil from "./pages/MiPerfil.js";
 import Buscar from "./pages/Buscar.js";
 // Componentes
 import ProtectedRoute from "./components/ProtectedRoute.js";
+import Estadisticas from "./pages/Estadisticas.js";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/miperfil" element={<MiPerfil />} />
           <Route path="/buscar" element={<Buscar />} />
+          <Route path="/estadisticas" element={<Estadisticas />} />
         </Route>
 
         {/* Rutas solo para votantes */}

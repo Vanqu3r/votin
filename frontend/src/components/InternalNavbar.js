@@ -78,12 +78,14 @@ const InternalNavbar = () => {
                 Buscar
               </Link>
             </li>
+            {user?.tipo !== "votante" && (
             <li className="nav-item">
               <Link className="nav-link d-flex align-items-center" to="/estadisticas">
                 <FaChartLine className="me-1" />
                 Estadísticas
               </Link>
             </li>
+            )}
             {user?.tipo === "candidato" && (
               <li className="nav-item">
                 <Link className="nav-link d-flex align-items-center" to="/crearpropuesta">
