@@ -47,13 +47,6 @@ function App() {
           <Route path="/validacion" element={<Validacion />} />
         </Route>
 
-        {/* <Route path="/crearpropuesta" element={<CrearPropuesta />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/miperfil" element={<MiPerfil />} />
-        <Route path="/preferencias" element={<Preferencias />} />
-        <Route path="/validacion" element={<Validacion />} />
-        <Route path="/crearpropuesta" element={<CrearPropuesta />} /> */}
-
         <Route path="*" element={<Home />} />
       </Routes>
     </Router>

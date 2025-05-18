@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 from app import mongo
 
 estadisticas_bp = Blueprint('estadisticas', __name__)

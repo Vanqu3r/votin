@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields, validate
-from datetime import datetime
 
 # VOTANTE: Schema para propuestas votadas
 class PropuestaVotadaSchema(Schema):

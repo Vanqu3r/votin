@@ -45,10 +45,7 @@ const InternalNavbar = () => {
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary py-1 shadow-sm">
       <div className="container-fluid">
         {/* Logo/Marca */}
-        <Link
-          className="navbar-brand fw-bold d-flex align-items-center"
-          to="/dashboard"
-        >
+        <Link className="navbar-brand fw-bold d-flex align-items-center" to="/">
           <FaShieldAlt className="me-2" />
           AutoVote
         </Link>
@@ -217,7 +214,7 @@ const InternalNavbar = () => {
               </li>
             ) : (
               <li className="nav-item">
-                <Link className="nav-link btn btn-outline-light" to="/login">
+                <Link className="nav-link btn btn-outline-light" to="/">
                   Iniciar Sesión
                 </Link>
               </li>

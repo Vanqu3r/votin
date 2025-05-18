@@ -26,7 +26,7 @@ export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
-    console.log("Usuario autenticado: ", user);
+    // console.log("Usuario autenticado: ", user);
     return user;  // Regresamos el usuario autenticado
   } catch (error) {
     console.error("Error al iniciar sesión con Google: ", error);
