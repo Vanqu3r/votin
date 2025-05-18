@@ -22,7 +22,51 @@ const [likedProposals, setLikedProposals] = useState([]);
 // Verificar si la propuesta actual está marcada como "me gusta"
 const isLiked = likedProposals.includes(selectedPropuesta?._id);
 const handleLikePropuesta = async (propuestaId) => {
-  
+  if (!user) {
+    alert('Debes iniciar sesión para votar');
+    return;
+  }
+
+  try {
+    const isCurrentlyLiked = likedProposals.includes(propuestaId);
+    
+    if (isCurrentlyLiked) {
+      // Eliminar voto
+      await apiClient.delete('/votes', {
+        data: {
+          id_propuesta: propuestaId,
+          id_votante: user.uid
+        }
+      });
+      setLikedProposals(likedProposals.filter(id => id !== propuestaId));
+    } else {
+      // Agregar voto
+      await apiClient.post('/votes', {
+        id_propuesta: propuestaId,
+        id_votante: user.uid
+      });
+      setLikedProposals([...likedProposals, propuestaId]);
+    }
+
+    // Actualizar la lista de propuestas
+    const updatedPropuestas = propuestas.map(propuesta => {
+      if (propuesta._id === propuestaId) {
+        const votes = propuesta.votos || [];
+        return {
+          ...propuesta,
+          votos: isCurrentlyLiked 
+            ? votes.filter(v => v.id_votante !== user.uid)
+            : [...votes, { id_votante: user.uid, fecha_voto: new Date().toISOString() }]
+        };
+      }
+      return propuesta;
+    });
+    setPropuestas(updatedPropuestas);
+    
+  } catch (error) {
+    console.error("Error al votar:", error);
+    alert(`Error: ${error.response?.data?.message || error.message}`);
+  }
 };
   // Handler para cambios en filtro de votante
   const handleMyVotesChange = (e) => {

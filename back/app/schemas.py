@@ -67,3 +67,9 @@ class PropuestaSchema(Schema):
     descripcion = fields.String(required=True, validate=validate.Length(min=10))
     categoria = fields.String(required=True, validate=validate.OneOf(CATEGORIAS_VALIDAS))
     votos = fields.List(fields.Nested(VotoSchema))
+
+class VoteSchema(Schema):
+    id = fields.String(dump_only=True)
+    id_propuesta = fields.String(required=True)  # ID de la propuesta votada
+    id_votante = fields.String(required=True)   # ID del votante que votó
+    fecha_voto = fields.DateTime(dump_only=True, default=datetime.utcnow)
