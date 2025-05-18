@@ -6,7 +6,7 @@ import apiClient from "../api/client"; // Asegúrate de que la ruta sea correcta
 
 const Validacion = () => {
   const [candidates, setCandidates] = useState([]);
-  // const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCandidatura, setFilterCandidatura] = useState("todos");
@@ -15,11 +15,14 @@ const Validacion = () => {
   useEffect(() => {
     const fetchCandidates = async () => {
       try {
+        setLoading(true);
         // Simulación de llamada a API - reemplaza con tu llamada real
         const response = await apiClient.get("/politico");
         setCandidates(response.data);
       } catch (err) {
         setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -98,25 +101,6 @@ const Validacion = () => {
       return 0;
     });
 
-  /* if (loading) {
-    return (
-      <div className="d-flex justify-content-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
-      </div>
-    );
-  } */
-
-  if (error) {
-    return (
-      <div className="alert alert-danger my-4">
-        <i className="bi bi-exclamation-triangle-fill me-2"></i>
-        Error al cargar los candidatos: {error}
-      </div>
-    );
-  }
-
   // Función para marcar cédula como inválida
   const invalidarCandidato = async (candidate_id) => {
     if (window.confirm("¿Estás seguro de marcar esta cédula como inválida?")) {
@@ -139,6 +123,27 @@ const Validacion = () => {
       }
     }
   };
+
+  if (loading)
+    return (
+      <>
+        <InternalNavbar />
+        <div className="container mt-5 text-center">
+          <div
+            className="spinner-border text-primary"
+            style={{ width: "2rem", height: "2rem" }}
+            role="status"
+          >
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <h4 className="mt-3">Cargando candidatos...</h4>
+          <p>Esto puede tomar unos momentos</p>
+        </div>
+      </>
+    );
+
+  if (error)
+    return <div className="alert alert-danger my-5">Error: {error}</div>;
 
   return (
     <>

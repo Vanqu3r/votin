@@ -12,25 +12,6 @@ db_votantes = mongo.db.v_votantes
 
 propuesta_schema = PropuestaSchema()
 
-# Crear propuesta
-""" @propuestas_bp.route('/', methods=['POST'])
-def create_propuesta():
-    try:
-        data = request.json
-        errores = propuesta_schema.validate(data)
-        if errores:
-            return jsonify({'errores': errores})
-
-        # Validar que el político exista
-        id_politico = data.get('id_politico')
-        if not id_politico or not db_politicos.find_one({'_id': ObjectId(id_politico)}):
-            return jsonify({'error': 'Político no encontrado'})
-
-        result = db.insert_one(data)
-        return jsonify({'message': 'Propuesta creada', 'id': str(result.inserted_id)}), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500 """
-
 # Obtener todas las propuestas
 @propuestas_bp.route('/', methods=['GET'])
 def get_propuestas():
@@ -46,6 +27,29 @@ def get_propuestas():
                 id_politico = id_politico.get('$oid', id_politico)
             
             # Obtener datos completos del político
+            politico = db_politicos.find_one({'_id': ObjectId(id_politico)})
+            if politico:
+                politico['_id'] = str(politico['_id'])
+                propuesta['politico'] = politico
+            
+            propuestas.append(propuesta)
+        
+        return jsonify(propuestas)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@propuestas_bp.route('/ultimas', methods=['GET'])
+def get_propuestas_ultimas():
+    try:
+        propuestas = []
+        for propuesta in db.find().sort('_id', -1).limit(5):
+            propuesta['_id'] = str(propuesta['_id'])
+            
+            id_politico = propuesta.get('id_politico')
+            if isinstance(id_politico, dict):
+                id_politico = id_politico.get('$oid', id_politico)
+            
             politico = db_politicos.find_one({'_id': ObjectId(id_politico)})
             if politico:
                 politico['_id'] = str(politico['_id'])
@@ -281,6 +285,7 @@ def obtener_preguntas(nombre_categoria):
     return "No se encontraron preguntas para esta categoría."
 
 
+# Cambiar estas para cambiarlas en todo el sistema
 preguntas = {
     "categorias": [
         {

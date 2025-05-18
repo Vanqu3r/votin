@@ -31,6 +31,7 @@ const PropuestasList = () => {
   useEffect(() => {
     const fetchPropuestas = async () => {
       try {
+        setLoading(true);
         const response = await apiClient.get("/propuesta");
         setPropuestas(response.data);
       } catch (err) {
@@ -95,24 +96,26 @@ const PropuestasList = () => {
     }
   });
 
-  /* if (loading) {
+  if (loading)
     return (
-      <div className="d-flex justify-content-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
+      <>
+        <InternalNavbar />
+        <div className="container mt-5 text-center">
+          <div
+            className="spinner-border text-primary"
+            style={{ width: "2rem", height: "2rem" }}
+            role="status"
+          >
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <h4 className="mt-3">Cargando propuestas...</h4>
+          <p>Esto puede tomar unos momentos</p>
         </div>
-      </div>
+      </>
     );
-  } */
 
-  if (error) {
-    return (
-      <div className="alert alert-danger my-4">
-        <i className="bi bi-exclamation-triangle-fill me-2"></i>
-        Error al cargar las propuestas: {error}
-      </div>
-    );
-  }
+  if (error)
+    return <div className="alert alert-danger my-5">Error: {error}</div>;
 
   return (
     <>

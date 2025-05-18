@@ -234,7 +234,7 @@ const Estadisticas = () => {
             <>
                 <InternalNavbar />
                 <div className="container mt-5 text-center">
-                    <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
+                    <div className="spinner-border text-primary" style={{ width: '2rem', height: '2rem' }} role="status">
                         <span className="visually-hidden">Cargando...</span>
                     </div>
                     <h4 className="mt-3">Cargando tus estadísticas...</h4>

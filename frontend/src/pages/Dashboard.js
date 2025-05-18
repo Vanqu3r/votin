@@ -1,78 +1,74 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import InternalNavbar from "../components/InternalNavbar";
 import apiClient from "../api/client";
 
 export default function Dashboard() {
-  // const navigate = useNavigate();
-
   const [stats, setStats] = useState({
     voters: 0,
     politicians: 0,
     proposals: 0,
   });
 
+  const [latestProposals, setLatestProposals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    apiClient
-      .get("/estadisticas/dashboard") // Ajusta URL si es diferente
-      .then((response) => {
-        const data = response.data;
-        setStats({
-          voters: data.votantes,
-          politicians: data.politicos,
-          proposals: data.propuestas,
-        });
-      })
-      .catch((error) => {
-        console.error("Error obteniendo el resumen:", error);
-      });
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const [dashboardRes, proposalsRes] = await Promise.all([
+          apiClient.get("/estadisticas/dashboard"),
+          apiClient.get("/propuesta/ultimas"),
+        ]);
+
+        if (dashboardRes.data) {
+          setStats({
+            voters: dashboardRes.data.votantes || 0,
+            politicians: dashboardRes.data.politicos || 0,
+            proposals: dashboardRes.data.propuestas || 0,
+          });
+        }
+
+        if (proposalsRes.data) {
+          setLatestProposals(proposalsRes.data);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setError(err.message);
+          console.error("Error fetching data:", err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const proposals = [
-    {
-      id: 1,
-      title: "Reforma educativa",
-      politician: "María González",
-      candidacy: "Alcaldía",
-      votes: 4521,
-    },
-    {
-      id: 2,
-      title: "Nuevo hospital",
-      politician: "Carlos Mendoza",
-      candidacy: "Gobernación",
-      votes: 3876,
-    },
-    {
-      id: 3,
-      title: "Mejora vial",
-      politician: "Ana Torres",
-      candidacy: "Concejo",
-      votes: 2987,
-    },
-    {
-      id: 4,
-      title: "Programa juvenil",
-      politician: "Luis Ramírez",
-      candidacy: "Alcaldía",
-      votes: 2453,
-    },
-    {
-      id: 5,
-      title: "Seguridad pública",
-      politician: "Patricia Sánchez",
-      candidacy: "Gobernación",
-      votes: 5120,
-    },
-  ];
+  if (loading)
+    return (
+      <>
+        <InternalNavbar />
+        <div className="container mt-5 text-center">
+          <div
+            className="spinner-border text-primary"
+            style={{ width: "2rem", height: "2rem" }}
+            role="status"
+          >
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <h4 className="mt-3">Cargando dashboard...</h4>
+          <p>Esto puede tomar unos momentos</p>
+        </div>
+      </>
+    );
 
-  // VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
-  /* useEffect(() => {
-    // Solo redirige cuando la carga ha terminado Y no hay usuario
-    if (!isLoading && !user) {
-      navigate("/");
-    }
-  }, [user, isLoading, navigate]); */
+  if (error)
+    return <div className="alert alert-danger my-5">Error: {error}</div>;
 
   return (
     <>
@@ -152,20 +148,26 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {proposals.map((proposal) => (
-                    <tr key={proposal.id}>
+                  {latestProposals.map((proposal) => (
+                    <tr key={proposal._id}>
                       <td>
-                        <strong>{proposal.title}</strong>
+                        <strong>{proposal.titulo}</strong>
+                        <small className="d-block text-muted">
+                          {proposal.categoria}
+                        </small>
                       </td>
-                      <td>{proposal.politician}</td>
                       <td>
-                        <span className="badge bg-secondary">
-                          {proposal.candidacy}
+                        {proposal.politico?.nombre}{" "}
+                        {proposal.politico?.apellido}
+                      </td>
+                      <td>
+                        <span className="badge bg-secondary text-capitalize">
+                          {proposal.politico?.candidatura}
                         </span>
                       </td>
                       <td className="text-end">
                         <span className="badge bg-primary rounded-pill">
-                          {proposal.votes.toLocaleString()}
+                          {proposal.votos?.length?.toLocaleString() || 0}
                         </span>
                       </td>
                     </tr>
@@ -175,10 +177,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="card-footer text-muted">
-            Mostrando {proposals.length} de {stats.proposals} propuestas
-            <button className="btn btn-sm btn-outline-primary float-end">
+            Mostrando {latestProposals.length} de {stats.proposals} propuestas
+            <Link className="btn btn-sm btn-outline-primary float-end" to="/buscar">
               Ver todas las propuestas
-            </button>
+            </Link>
           </div>
         </div>
       </div>
