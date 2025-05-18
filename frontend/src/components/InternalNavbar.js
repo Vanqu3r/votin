@@ -12,8 +12,7 @@ import {
   FaSearch, // Buscar
   FaHome, // Dashboard
   FaPlus, // Crear propuesta
-  FaCheckCircle,
-  FaExternalLinkAlt,
+  FaCheckCircle, // Validación
   FaPoll, // Validación
 } from "react-icons/fa";
 
