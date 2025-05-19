@@ -17,57 +17,70 @@ const PropuestasList = () => {
   const [sortOption, setSortOption] = useState("votos_desc");
   const [myVotes, setMyVotes] = useState("todas"); // "mis_votadas" o "todas"
   const [myProposals, setMyProposals] = useState("todas"); // "mis_propuestas" o "todas"
-const [likedProposals, setLikedProposals] = useState([]);
+  const [likedProposals, setLikedProposals] = useState([]);
 
-// Verificar si la propuesta actual está marcada como "me gusta"
-const isLiked = likedProposals.includes(selectedPropuesta?._id);
-const handleLikePropuesta = async (propuestaId) => {
-  if (!user) {
-    alert('Debes iniciar sesión para votar');
-    return;
-  }
-
-  try {
-    const isCurrentlyLiked = likedProposals.includes(propuestaId);
-    
-    if (isCurrentlyLiked) {
-      // Eliminar voto
-      await apiClient.delete('/votes', {
-        data: {
-          id_propuesta: propuestaId,
-          id_votante: user.uid
-        }
-      });
-      setLikedProposals(likedProposals.filter(id => id !== propuestaId));
-    } else {
-      // Agregar voto
-      await apiClient.post('/votes', {
-        id_propuesta: propuestaId,
-        id_votante: user.uid
-      });
-      setLikedProposals([...likedProposals, propuestaId]);
+  // Verificar si la propuesta actual está marcada como "me gusta"
+  const isLiked = likedProposals.includes(selectedPropuesta?._id);
+  const handleLikePropuesta = async (propuestaId) => {
+    if (!user) {
+      alert('Debes iniciar sesión para votar');
+      return;
     }
 
-    // Actualizar la lista de propuestas
-    const updatedPropuestas = propuestas.map(propuesta => {
-      if (propuesta._id === propuestaId) {
-        const votes = propuesta.votos || [];
-        return {
-          ...propuesta,
-          votos: isCurrentlyLiked 
-            ? votes.filter(v => v.id_votante !== user.uid)
-            : [...votes, { id_votante: user.uid, fecha_voto: new Date().toISOString() }]
-        };
+    try {
+      const isCurrentlyLiked = likedProposals.includes(propuestaId);
+
+      if (isCurrentlyLiked) {
+        // Eliminar voto
+        await apiClient.patch(`/propuesta/${propuestaId}/unvote`, {
+          id_votante: user.uid
+        });
+
+        // Actualizar estado local
+        setLikedProposals(likedProposals.filter(id => id !== propuestaId));
+        setPropuestas(propuestas.map(p => {
+          if (p._id === propuestaId) {
+            return {
+              ...p,
+              votos: p.votos?.filter(v => v.id_votante !== user.uid) || []
+            };
+          }
+          return p;
+        }));
+      } else {
+        // Agregar voto
+        await apiClient.patch(`/propuesta/${propuestaId}/vote`, {
+          id_votante: user.uid
+        });
+
+        // Actualizar estado local
+        setLikedProposals([...likedProposals, propuestaId]);
+        setPropuestas(propuestas.map(p => {
+          if (p._id === propuestaId) {
+            return {
+              ...p,
+              votos: [...(p.votos || []), { id_votante: user.uid }]
+            };
+          }
+          return p;
+        }));
       }
-      return propuesta;
-    });
-    setPropuestas(updatedPropuestas);
-    
-  } catch (error) {
-    console.error("Error al votar:", error);
-    alert(`Error: ${error.response?.data?.message || error.message}`);
-  }
-};
+
+      // Actualizar la propuesta seleccionada si es la misma
+      if (selectedPropuesta?._id === propuestaId) {
+        setSelectedPropuesta(prev => ({
+          ...prev,
+          votos: isCurrentlyLiked
+            ? prev.votos.filter(v => v.id_votante !== user.uid)
+            : [...prev.votos, { id_votante: user.uid }]
+        }));
+      }
+
+    } catch (error) {
+      console.error("Error al votar:", error);
+      alert(`Error: ${error.response?.data?.message || error.message}`);
+    }
+  };
   // Handler para cambios en filtro de votante
   const handleMyVotesChange = (e) => {
     setMyVotes(e.target.value);
@@ -93,11 +106,22 @@ const handleLikePropuesta = async (propuestaId) => {
   ];
 
   useEffect(() => {
-    const fetchPropuestas = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         const response = await apiClient.get("/propuesta");
         setPropuestas(response.data);
+
+        // Obtener propuestas votadas por el usuario actual
+        if (user?.uid) {
+          const userVotedIds = response.data
+            .filter(propuesta =>
+              propuesta.votos?.some(v => v.id_votante === user.uid)
+            )
+            .map(p => p._id);
+          setLikedProposals(userVotedIds);
+        }
+
       } catch (err) {
         setError(err.message);
       } finally {
@@ -105,8 +129,8 @@ const handleLikePropuesta = async (propuestaId) => {
       }
     };
 
-    fetchPropuestas();
-  }, []);
+    fetchData();
+  }, [user?.uid]);
 
   // Abrir modal con los detalles de la propuesta
   const handlePropuestaClick = (propuesta) => {
@@ -158,7 +182,7 @@ const handleLikePropuesta = async (propuestaId) => {
 
     const matchesVotes = user?.tipo !== 'votante' ||
       myVotes === 'todas' ||
-      (propuesta.votos && propuesta.votos.includes(user.uid));
+      likedProposals.includes(propuesta._id);
 
     // Filtro adicional para candidatos
     const matchesProposals = user?.tipo !== 'candidato' ||
@@ -169,36 +193,36 @@ const handleLikePropuesta = async (propuestaId) => {
   });
 
   const sortedPropuestas = filteredPropuestas.sort((a, b) => {
-      const filtered = filteredPropuestas.filter(propuesta => {
-    if (user?.tipo === 'votante' && myVotes === 'mis_votadas') {
-      return propuesta.votos && propuesta.votos.includes(user.uid);
-    }
-    if (user?.tipo === 'candidato' && myProposals === 'mis_propuestas') {
-      return propuesta.politico && propuesta.politico._id === user.uid;
-    }
-    return true;
-  });
-     return filtered.sort((a, b) => {
-    const votosA = a.votos?.length || 0;
-    const votosB = b.votos?.length || 0;
+    const filtered = filteredPropuestas.filter(propuesta => {
+      if (user?.tipo === 'votante' && myVotes === 'mis_votadas') {
+        return propuesta.votos && propuesta.votos.includes(user.uid);
+      }
+      if (user?.tipo === 'candidato' && myProposals === 'mis_propuestas') {
+        return propuesta.politico && propuesta.politico._id === user.uid;
+      }
+      return true;
+    });
+    return filtered.sort((a, b) => {
+      const votosA = a.votos?.length || 0;
+      const votosB = b.votos?.length || 0;
 
-    const fechaA =
-      new Date(a.fecha_creacion?.$date || a.fecha_creacion || 0).getTime() || 0;
-    const fechaB =
-      new Date(b.fecha_creacion?.$date || b.fecha_creacion || 0).getTime() || 0;
+      const fechaA =
+        new Date(a.fecha_creacion?.$date || a.fecha_creacion || 0).getTime() || 0;
+      const fechaB =
+        new Date(b.fecha_creacion?.$date || b.fecha_creacion || 0).getTime() || 0;
 
-    switch (sortOption) {
-      case "votos_desc":
-        return votosB - votosA;
-      case "votos_asc":
-        return votosA - votosB;
-      case "fecha_desc":
-        return fechaB - fechaA;
-      case "fecha_asc":
-        return fechaA - fechaB;
-      default:
-        return 0;
-    }
+      switch (sortOption) {
+        case "votos_desc":
+          return votosB - votosA;
+        case "votos_asc":
+          return votosA - votosB;
+        case "fecha_desc":
+          return fechaB - fechaA;
+        case "fecha_asc":
+          return fechaA - fechaB;
+        default:
+          return 0;
+      }
     });
   });
 
@@ -416,7 +440,7 @@ const handleLikePropuesta = async (propuestaId) => {
                           )}
                         </td>
                         <td>
-                          {propuesta.votos ? (
+                          {propuesta.votos && propuesta.votos.length > 0? (
                             <span className="badge bg-success text-white">
                               {propuesta.votos.length} Votos
                             </span>
@@ -622,29 +646,34 @@ const handleLikePropuesta = async (propuestaId) => {
                     );
                   }
                   if (user.tipo === 'votante') {
-  return (
-    <div className="d-flex align-items-center">
-      {/* Botón de Me Gusta */}
-      <button
-        type="button"
-        className="btn btn-outline-danger me-2"
-        onClick={() => handleLikePropuesta(selectedPropuesta._id)}
-      >
-        <i className={`bi ${selectedPropuesta.meGusta ? 'bi-heart-fill' : 'bi-heart'}`}></i>
-      </button>
-      
-      {/* Botón de Eliminar (si es necesario) */}
-      <button
-        type="button"
-        className="btn btn-danger me-auto"
-        onClick={() => handleDeletePropuesta(selectedPropuesta._id)}
-      >
-        <i className="bi bi-trash-fill me-2"></i>
-        Eliminar Propuesta
-      </button>
-    </div>
-  );
-}
+                    return (
+                      <div className="d-flex align-items-center">
+                        {/* Botón de Me Gusta */}
+                        <button
+                          type="button"
+                          className={`btn ${likedProposals.includes(selectedPropuesta._id)
+                            ? 'btn-danger'
+                            : 'btn-outline-danger'} me-2`}
+                          onClick={() => handleLikePropuesta(selectedPropuesta._id)}
+                        >
+                          <i className={`bi ${likedProposals.includes(selectedPropuesta._id)
+                            ? 'bi-heart-fill'
+                            : 'bi-heart'}`}></i>
+                          {likedProposals.includes(selectedPropuesta._id) ? ' Quitar voto' : ' Votar'}
+                        </button>
+
+                        {/* Botón de Eliminar (si es necesario) */}
+                        <button
+                          type="button"
+                          className="btn btn-danger me-auto"
+                          onClick={() => handleDeletePropuesta(selectedPropuesta._id)}
+                        >
+                          <i className="bi bi-trash-fill me-2"></i>
+                          Eliminar Propuesta
+                        </button>
+                      </div>
+                    );
+                  }
                   return null;
                 })()}
 

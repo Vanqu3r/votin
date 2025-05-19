@@ -22,7 +22,6 @@ def create_app():
     from .routes.propuestas import propuestas_bp
     from .routes.administradores import administradores_bp
     from .routes.estadisticas import estadisticas_bp
-    from .routes.votes import votes_bp
     
 
     app.register_blueprint(votantes_bp, url_prefix='/api/votante')
@@ -30,7 +29,6 @@ def create_app():
     app.register_blueprint(propuestas_bp, url_prefix='/api/propuesta')
     app.register_blueprint(administradores_bp, url_prefix='/api/administrador')
     app.register_blueprint(estadisticas_bp, url_prefix='/api/estadisticas')
-    app.register_blueprint(votes_bp, url_prefix='/api/votes')
 
     # Ruta por defecto
     @app.route('/')

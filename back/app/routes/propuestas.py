@@ -380,3 +380,90 @@ preguntas = {
         }
     ]
 }
+
+# ---- Agrega estos endpoints al final de tu archivo, antes de las funciones auxiliares ----
+
+@propuestas_bp.route('/<id_propuesta>/vote', methods=['PATCH'])
+def add_vote(id_propuesta):
+    try:
+        data = request.json
+        
+        # Validar campos requeridos
+        if 'id_votante' not in data:
+            return jsonify({'error': 'El id_votante es requerido'}), 400
+
+        # Verificar si la propuesta existe
+        propuesta = db.find_one({'_id': ObjectId(id_propuesta)})
+        if not propuesta:
+            return jsonify({'error': 'Propuesta no encontrada'}), 404
+
+        # Verificar si el votante existe
+        votante = db_votantes.find_one({'_id': ObjectId(data['id_votante'])})
+        if not votante:
+            return jsonify({'error': 'Votante no encontrado'}), 404
+
+        # Verificar si ya votó
+        voto_existente = next(
+            (v for v in propuesta.get('votos', []) if v['id_votante'] == data['id_votante']),
+            None
+        )
+        if voto_existente:
+            return jsonify({'error': 'Este votante ya votó por esta propuesta'}), 400
+
+        # Agregar el voto
+        result = db.update_one(
+            {'_id': ObjectId(id_propuesta)},
+            {
+                '$push': {
+                    'votos': {
+                        'id_votante': data['id_votante'],
+                        'fecha_voto': datetime.now(timezone.utc)
+                    }
+                }
+            }
+        )
+
+        if result.modified_count == 0:
+            return jsonify({'error': 'No se pudo registrar el voto'}), 400
+
+        # Actualizar la lista de propuestas votadas del votante
+        db_votantes.update_one(
+            {'_id': ObjectId(data['id_votante'])},
+            {'$addToSet': {'propuestas_votadas': id_propuesta}}
+        )
+
+        return jsonify({'message': 'Voto registrado correctamente'})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@propuestas_bp.route('/<id_propuesta>/unvote', methods=['PATCH'])
+def remove_vote(id_propuesta):
+    try:
+        data = request.json
+        
+        # Validar campos requeridos
+        if 'id_votante' not in data:
+            return jsonify({'error': 'El id_votante es requerido'}), 400
+
+        # Eliminar el voto de la propuesta
+        result = db.update_one(
+            {'_id': ObjectId(id_propuesta)},
+            {'$pull': {'votos': {'id_votante': data['id_votante']}}}
+        )
+
+        if result.modified_count == 0:
+            return jsonify({'error': 'No se encontró el voto especificado'}), 404
+
+        # Eliminar la propuesta de la lista del votante
+        db_votantes.update_one(
+            {'_id': ObjectId(data['id_votante'])},
+            {'$pull': {'propuestas_votadas': id_propuesta}}
+        )
+
+        return jsonify({'message': 'Voto eliminado correctamente'})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ---- Las funciones auxiliares (generar_voto_si_coincide, obtener_preguntas, etc.) quedan igual ----
